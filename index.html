@@ -2927,6 +2927,92 @@ html[data-theme="light"] .logout-btn:hover { background: rgba(200,60,60,0.18); c
 .repo-fc-btn-del { background: rgba(220,50,50,.08); color: #e55; border-color: rgba(220,50,50,.2); }
 .repo-fc-btn-del:hover { background: rgba(220,50,50,.2); }
 
+/* Contract create-tab localization */
+.contract-lang-toggle {
+  margin-right: auto;
+  padding: 7px 14px;
+  border-radius: 20px;
+  border: 1.5px solid var(--gold);
+  background: rgba(184,146,42,.1);
+  color: var(--gold-glow);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all .2s;
+}
+.contract-lang-toggle:hover { background: rgba(184,146,42,.2); transform: translateY(-1px); }
+.main.contract-ltr { direction: ltr; }
+.main.contract-ltr .wizard-panel,
+.main.contract-ltr .preview-panel,
+.main.contract-ltr .card,
+.main.contract-ltr .fg,
+.main.contract-ltr .q-service-card,
+.main.contract-ltr .clause-editor,
+.main.contract-ltr .empty-preview,
+.main.contract-ltr .preview-topbar {
+  direction: ltr;
+  text-align: left;
+}
+.main.contract-ltr .fi,
+.main.contract-ltr .fs,
+.main.contract-ltr textarea,
+.main.contract-ltr select,
+.main.contract-ltr input {
+  direction: ltr;
+  text-align: left;
+}
+.main.contract-ltr .steps-nav,
+.main.contract-ltr .preview-actions,
+.main.contract-ltr .card-header-row,
+.main.contract-ltr .amt-row,
+.main.contract-ltr .grid2 {
+  direction: ltr;
+}
+.main.contract-ltr .btn-secondary#btnBack { direction: ltr; }
+.doc-body.contract-doc-ltr,
+.print-page-inner.contract-doc-ltr {
+  direction: ltr !important;
+  text-align: left !important;
+  font-family: Georgia, "Times New Roman", serif !important;
+}
+.doc-body.contract-doc-ltr .doc-header,
+.doc-body.contract-doc-ltr .bismillah,
+.doc-body.contract-doc-ltr .title,
+.doc-body.contract-doc-ltr .subtitle-band,
+.doc-body.contract-doc-ltr .preamble-head,
+.print-page-inner.contract-doc-ltr .doc-header,
+.print-page-inner.contract-doc-ltr .bismillah,
+.print-page-inner.contract-doc-ltr .title,
+.print-page-inner.contract-doc-ltr .subtitle-band,
+.print-page-inner.contract-doc-ltr .preamble-head {
+  text-align: center !important;
+}
+.doc-body.contract-doc-ltr .party-block,
+.doc-body.contract-doc-ltr .preamble,
+.doc-body.contract-doc-ltr .clause,
+.doc-body.contract-doc-ltr .pb-detail,
+.print-page-inner.contract-doc-ltr .party-block,
+.print-page-inner.contract-doc-ltr .preamble,
+.print-page-inner.contract-doc-ltr .clause,
+.print-page-inner.contract-doc-ltr .pb-detail {
+  direction: ltr !important;
+  text-align: left !important;
+}
+.doc-body.contract-doc-ltr .pay-table,
+.print-page-inner.contract-doc-ltr .pay-table {
+  direction: ltr !important;
+  text-align: left !important;
+}
+.doc-body.contract-doc-ltr .sig-row,
+.print-page-inner.contract-doc-ltr .sig-row {
+  direction: ltr !important;
+}
+
 /* cloud sync status bar */
 .repo-sync-bar {
   display: none;
@@ -3062,6 +3148,10 @@ html[data-theme="light"] .logout-btn:hover { background: rgba(200,60,60,0.18); c
           <div class="step-num">٥</div>
           <div class="step-label">الأتعاب والدفعات</div>
         </div>
+        <button type="button" id="contractLangToggleBtn" class="contract-lang-toggle"
+          onclick="toggleContractLang()" title="تبديل لغة إنشاء العقد / Toggle contract language">
+          🇬🇧 English
+        </button>
       </div>
 
       <!-- BODY -->
@@ -4293,6 +4383,388 @@ const TOTAL_STEPS = 5;
 const g = id => document.getElementById(id);
 const v = id => { const el = g(id); return el ? el.value.trim() : ''; };
 
+/* ── CONTRACT CREATE-TAB LOCALIZATION ── */
+const CONTRACT_LANG_KEY = 'daam_contract_create_lang';
+let contractLang = (() => {
+  try { return localStorage.getItem(CONTRACT_LANG_KEY) || 'ar'; }
+  catch(e) { return 'ar'; }
+})();
+function cIsEn() { return contractLang === 'en'; }
+
+const C_UI_TRANSLATIONS = {
+  'معلومات العقد':'Contract Information',
+  'الطرف الثاني':'Second Party',
+  'الخدمات والمدة':'Services & Duration',
+  'التمهيد والبنود':'Preamble & Clauses',
+  'الأتعاب والدفعات':'Fees & Payments',
+  'رقم العقد':'Contract No.',
+  'رقم العقد: —':'Contract No.: —',
+  'توليد تلقائي':'Auto-generate',
+  'يوم الانعقاد':'Signing Day',
+  '— اختر اليوم —':'— Select day —',
+  'التاريخ الهجري':'Hijri Date',
+  'التاريخ الميلادي':'Gregorian Date',
+  'اختر التاريخ من التقويم':'Select date from calendar',
+  '— اختر التاريخ الهجري —':'— Select Hijri date —',
+  '— اختر التاريخ الميلادي —':'— Select Gregorian date —',
+  '— اختر التاريخ —':'— Select date —',
+  '✏️ تعديل يدوي (يوم/شهر/سنة هـ)':'Manual edit (day/month/year H)',
+  'بيانات الطرف الأول — شركة الدعم':'First Party Details — AL-DAAM',
+  'العنوان الوطني للشركة':'Company National Address',
+  'بيانات الطرف الثاني':'Second Party Details',
+  'اسم الشركة':'Company Name',
+  'يرجى إدخال اسم الشركة':'Please enter the company name',
+  'الرقم الموحد':'Unified Number',
+  'يرجى إدخال الرقم الموحد':'Please enter the unified number',
+  '🗓 تاريخ الإصدار (هـ)':'Issue Date (H)',
+  '📅 تاريخ الإصدار (م)':'Issue Date (G)',
+  'العنوان الوطني':'National Address',
+  'اسم الممثل / المدير':'Representative / Manager Name',
+  'يرجى إدخال اسم الممثل':'Please enter the representative name',
+  'صفة الممثل':'Representative Capacity',
+  'جوال الممثل':'Representative Mobile',
+  'البريد الإلكتروني للممثل':'Representative Email',
+  'مدينة الشركة':'Company City',
+  'نوع الخدمة المطلوبة':'Required Service Type',
+  '(يمكن اختيار أكثر من خدمة، ولكل خدمة تفاصيلها)':'(Multiple services can be selected; each service has its own details)',
+  'اختر الدرجة (يمكن اختيار أكثر من درجة)، ثم اختر المجالات تحت كل درجة:':'Select grade (multiple allowed), then select domains under each grade:',
+  'اختر الدرجة (يمكن اختيار أكثر من درجة):':'Select grade (multiple allowed):',
+  'يمكن اختيار أكثر من شهادة (Ctrl + نقر)':'Multiple selection allowed (Ctrl + click)',
+  'يمكن اختيار أكثر من خدمة:':'Multiple services can be selected:',
+  'نوع الشركة (لتأسيس / تحويل):':'Company Type (for Formation / Conversion):',
+  'بيانات المؤسسة المراد تحويلها:':'Establishment to be Converted:',
+  'الاحتفاظ بالاسم التجاري للمؤسسة':'Keep the establishment trade name',
+  'حجز اسم تجاري جديد':'Reserve a new trade name',
+  'نوع التعديل (لتعديل عقد التأسيس):':'Amendment Type (for Articles of Association):',
+  'سجلات المؤسسات المراد شطبها:':'Establishment CRs to be Cancelled:',
+  '➕ إضافة سجل مؤسسة آخر':'Add Another Establishment CR',
+  'سجلات الشركات المراد شطبها:':'Company CRs to be Cancelled:',
+  '➕ إضافة سجل شركة آخر':'Add Another Company CR',
+  'اختر المجال (يمكن اختيار أكثر من واحد)، ثم اختر الدرجات تحت كل مجال:':'Select domain (multiple allowed), then select grades under each domain:',
+  'اختر الأنشطة (يمكن اختيار أكثر من نشاط):':'Select activities (multiple allowed):',
+  'يمكن اختيار أكثر من نشاط (Ctrl + نقر)':'Multiple activities can be selected (Ctrl + click)',
+  'سنوات الميزانية (يمكن اختيار أكثر من سنة):':'Financial Statement Years (multiple allowed):',
+  'نوع الخدمة (يمكن اختيار أكثر من واحد):':'Service Type (multiple allowed):',
+  'اختر نوع الوقف (يمكن اختيار أكثر من نوع):':'Select Waqf type (multiple allowed):',
+  'مدة التنفيذ (أيام عمل)':'Execution Period (working days)',
+  'نطاق الخدمات والمهام المشمولة':'Scope of Services and Included Tasks',
+  '💡 اذكر بالتفصيل ما ستقوم به الشركة مقابل الأتعاب — كل سطر بند منفصل، ستُعرض كقائمة مرقمة في العقد النهائي.':'Describe in detail what the company will provide against the fees. Each line is a separate item and will appear as a numbered list in the final contract.',
+  '💡 يمكنك اختيار أكثر من قالب؛ ستُضاف بنوده إلى الموجود (مع تجاهل المتكرر). اضغط ⚙ بجانب أي قالب لجعله افتراضياً (يُحفظ ما تعدّله) أو لاستعادة الإعداد الأصلي. القوالب مشتركة بين إنشاء العرض وإنشاء العقد.':'You may select more than one template; items will be appended while duplicates are ignored. Use ⚙ beside a template to set the current content as default or restore the original. Templates are shared between quotes and contracts.',
+  'التمهيد والبنود القانونية':'Preamble & Legal Clauses',
+  'المادة الأولى — التمهيد والتعريفات':'Article 1 — Preamble and Definitions',
+  'المادة الثانية — محل العقد ونطاق الخدمات':'Article 2 — Subject Matter and Scope of Services',
+  'المادة الثالثة — التزامات الطرف الأول (المستشار)':'Article 3 — Obligations of the First Party (Consultant)',
+  'المادة الرابعة — التزامات الطرف الثاني (العميل)':'Article 4 — Obligations of the Second Party (Client)',
+  'المادة الخامسة — الأتعاب وآلية السداد':'Article 5 — Fees and Payment Mechanism',
+  'المادة السادسة — السرية وحقوق الملكية الفكرية':'Article 6 — Confidentiality and Intellectual Property',
+  'المادة السابعة — القوة القاهرة':'Article 7 — Force Majeure',
+  'المادة الثامنة — تعديل العقد وإنهاؤه':'Article 8 — Amendment and Termination',
+  'المادة التاسعة — فض النزاعات':'Article 9 — Dispute Resolution',
+  'المادة العاشرة — الإشعارات والتواصل':'Article 10 — Notices and Communication',
+  '⚙ تلقائية':'Auto-generated',
+  '💡 كل سطر = نقطة منفصلة في قائمة الالتزامات':'Each line is a separate obligation item',
+  '💡 كل سطر = نقطة منفصلة':'Each line is a separate item',
+  '★ جعله افتراضياً':'Set as default',
+  '↺ إعادة الافتراضي':'Restore default',
+  'أضف بند...':'Add clause...',
+  'الأتعاب المهنية والدفعات':'Professional Fees & Payments',
+  'الأتعاب قبل الضريبة':'Fees Before VAT',
+  'المبلغ قبل ضريبة القيمة المضافة (ريال)':'Amount Before VAT (SAR)',
+  'ضريبة القيمة المضافة 15%:':'VAT 15%:',
+  'الإجمالي شامل ضريبة القيمة المضافة':'Total Including VAT',
+  'الإجمالي بالكلمات':'Total in Words',
+  '✦ تلقائي':'Auto',
+  'الدفعة الأولى':'First Payment',
+  'الدفعة الثانية':'Second Payment',
+  'الدفعة الثالثة':'Third Payment',
+  'حذف':'Delete',
+  'شرح الدفعة':'Payment Description',
+  'المبلغ (ريال)':'Amount (SAR)',
+  'بالكلمات':'In Words',
+  'أضف دفعة':'Add Payment',
+  '→ السابق':'← Back',
+  'التالي ←':'Next →',
+  '⚡ إنشاء العقد':'Generate Contract',
+  'في انتظار البيانات...':'Waiting for data...',
+  'معاينة':'Preview',
+  'حفظ العقد':'Save Contract',
+  'التوقيع':'Signature',
+  'الختم':'Stamp',
+  'طباعة':'Print',
+  'معاينة العقد':'Contract Preview',
+  'أدخل البيانات في الخطوات الأربع ثم اضغط':'Enter the data in the steps, then click',
+  '«إنشاء العقد» لمشاهدة العقد الرسمي هنا':'"Generate Contract" to view the official contract here',
+  'معاينة قبل الطباعة':'Print Preview',
+  'طباعة الآن':'Print Now',
+  '✕ إغلاق':'Close',
+  'تصفير الكل':'Reset all',
+  'إظهار/إخفاء التوقيع الرسمي للطرف الأول':'Show/hide first party official signature',
+  'إظهار/إخفاء الختم الرسمي للطرف الأول':'Show/hide first party official stamp',
+  'تبديل لغة إنشاء العقد / Toggle contract language':'Toggle contract language'
+};
+
+const C_VALUE_TRANSLATIONS = {
+  'الأحد':'Sunday','الاثنين':'Monday','الثلاثاء':'Tuesday','الأربعاء':'Wednesday','الخميس':'Thursday','الجمعة':'Friday','السبت':'Saturday',
+  'ح':'Su','ن':'Mo','ث':'Tu','ر':'We','خ':'Th','ج':'Fr','س':'Sa',
+  'محرم':'Muharram','صفر':'Safar','ربيع الأول':'Rabi Al-Awwal','ربيع الآخر':'Rabi Al-Thani','جمادى الأولى':'Jumada Al-Awwal','جمادى الآخرة':'Jumada Al-Thani','رجب':'Rajab','شعبان':'Shaaban','رمضان':'Ramadan','شوال':'Shawwal','ذو القعدة':'Dhul Qadah','ذو الحجة':'Dhul Hijjah',
+  'المدير العام':'General Manager','المدير':'Manager','الرئيس التنفيذي':'Chief Executive Officer','المفوض بالتوقيع':'Authorized Signatory','المالك':'Owner',
+  '-- اختر نوع الشركة --':'-- Select Company Type --','شركة الشخص الواحد':'Single-Person Company','شركة ذات مسؤولية محدودة':'Limited Liability Company (LLC)','شركة مساهمة بسيطة':'Simple Joint Stock Company','شركة مساهمة مقفلة':'Closed Joint Stock Company','شركة مساهمة عامة':'Public Joint Stock Company','شركة تضامنية':'General Partnership','شركة توصية بسيطة':'Limited Partnership','شركة مهنية':'Professional Company','شركة قابضة':'Holding Company',
+  '-- اختر نوع التعديل --':'-- Select Amendment Type --','دخول شريك':'Partner Entry','خروج شريك':'Partner Exit','تعديل أغراض الشركة':'Amend Company Objectives','تعديل رأس المال':'Amend Capital','تعديل العنوان الوطني':'Amend National Address','أخرى':'Other',
+  'الدرجة الأولى':'Grade 1','الدرجة الثانية':'Grade 2','الدرجة الثالثة':'Grade 3','الدرجة الرابعة':'Grade 4','الدرجة الخامسة':'Grade 5','درجة الاعتماد':'Accreditation','الأولى':'Grade 1','الثانية':'Grade 2','الثالثة':'Grade 3','الرابعة':'Grade 4','الخامسة':'Grade 5','الاعتماد':'Accreditation',
+  'التشييد والبناء':'Construction & Building','التشغيل والصيانة والخدمات':'Operations, Maintenance & Services','التغذية والإعاشة':'Catering & Food Services','المعارض والمؤتمرات':'Exhibitions & Conferences','المساحة الجيومكانية':'Geospatial Surveying','الاتصالات وتقنية المعلومات':'Telecommunications & IT','الأمن السيبراني':'Cybersecurity','النقل':'Transportation',
+  'استخراج شهادة تصنيف':'Issue Classification Certificate','تجديد شهادة التصنيف':'Renew Classification Certificate','تمديد شهادة التصنيف':'Extend Classification Certificate','تحديث شهادة التصنيف':'Update Classification Certificate','استخراج شهادة الجودة (ISO)':'Issue Quality Certificate (ISO)','استخراج شهادة تأهيل البيع على الخارطة (وافي)':'Issue Off-Plan Sales Qualification Certificate (WAFI)','استخراج شهادة المطور العقاري (الاسترداد الضريبي)':'Issue Real Estate Developer Certificate (VAT Refund)','خدمات الشركات':'Corporate Services','إضافة مجال في شهادة التصنيف':'Add Domain to Classification Certificate','الشركات والمكاتب الاستشارية الهندسية':'Engineering Consulting Firms & Offices','الميزانيات':'Financial Statements','استخراج شهادة وقفية معتمدة من الجهة الحكومية المختصة':'Issue Certified Waqf Certificate from Competent Government Authority',
+  'تأسيس شركة':'Company Formation','تحويل المؤسسة إلى شركة':'Convert Establishment to Company','تعديل عقد التأسيس':'Amend Articles of Association','المواءمة':"Alignment (Muwaa'amah)",'التأكيد السنوي':'Annual Confirmation','إضافة مستفيد حقيقي':'Add Ultimate Beneficial Owner','رفع تعليق السجل التجاري':'Lift CR Suspension','تحويل الفروع إلى شركات':'Convert Branches to Companies','شطب سجل مؤسسة':'Cancel Establishment CR','شطب سجل شركة':'Cancel Company CR',
+  'ISO 9001 — نظام إدارة الجودة':'ISO 9001 - Quality Management System','ISO 14001 — نظام الإدارة البيئية':'ISO 14001 - Environmental Management System','ISO 45001 — الصحة والسلامة المهنية':'ISO 45001 - Occupational Health & Safety','ISO 27001 — أمن المعلومات':'ISO 27001 - Information Security','ISO 22000 — سلامة الغذاء':'ISO 22000 - Food Safety','ISO 50001 — إدارة الطاقة':'ISO 50001 - Energy Management',
+  'الاستشارات الهندسية والمعمارية':'Engineering & Architectural Consulting','إدارة المشاريع الإنشائية':'Construction Project Management','الاستشارات الهندسية للتخطيط الحضري':'Engineering Consulting for Urban Planning','الاستشارات الهندسية لعمارة البيئة':'Engineering Consulting for Environmental Architecture','الاستشارات الهندسية للطرق والجسور والأنفاق':'Engineering Consulting for Roads, Bridges & Tunnels','الاستشارات الهندسية للنفط والغاز':'Engineering Consulting for Oil & Gas','الاستشارات الهندسية للسكك الحديدية':'Engineering Consulting for Railways','الاستشارات الهندسية للموانئ البحرية وإنشاءات النقل البحري':'Engineering Consulting for Marine Ports & Maritime Transport','الاستشارات الهندسية للمياه والصرف الصحي':'Engineering Consulting for Water & Wastewater','استشارات الهندسة الميكانيكية':'Mechanical Engineering Consulting','استشارات الهندسة الإلكترونية':'Electronic Engineering Consulting','أنشطة الهندسة للمشاريع الكهربائية والحفريات والأمن والسلامة والكيماوية':'Engineering Activities - Electrical, Excavation, Security, Safety & Chemical Projects','أنشطة الاستشارات الصناعية':'Industrial Consulting Activities','أنشطة الاستشارات الزراعية':'Agricultural Consulting Activities','أنشطة الاستشارات الكيميائية':'Chemical Consulting Activities','أنشطة الاستشارات في مجال الاتصالات وتقنية المعلومات':'Consulting Activities in Telecommunications & IT','أنشطة الاستشارات في مجال الحاسب الآلي':'Computer Consulting Activities','أنشطة الهندسة الصوتية والسمعية':'Acoustic & Audio Engineering Activities','أنشطة الاستشارات الجيوفيزيائية':'Geophysical Consulting Activities','أنشطة الاستشارات الجيولوجية':'Geological Consulting Activities','أنشطة الاستشارات البحرية':'Marine Consulting Activities','أنشطة تصميم الديكورات الداخلية':'Interior Design Activities','تقديم خدمات الاستشارات الهندسية في مجال الوقاية والحماية من الحريق':'Engineering Consulting for Fire Prevention & Protection','أنشطة إدارة مشاريع كفاءة الطاقة':'Energy Efficiency Project Management Activities','أنشطة تقديم خدمات مراجعة تصميم الطاقة':'Energy Design Review Services','أنشطة تقديم خدمات التصميم الهندسي لمعايير كفاءة الطاقة':'Engineering Design Services for Energy Efficiency Standards','أنشطة تقديم خدمات القياس والتحقق من الطاقة':'Energy Measurement & Verification Services','الأنشطة الهندسية والتقنية المتعلقة بالأنشطة التخصصية لجميع فروع الهندسة':'Technical & Engineering Activities across All Specialized Engineering Branches',
+  'إعداد':'Preparation','اعتماد من محاسب قانوني':'CPA Certification','رفع على قوائم':'Submit to Platforms','تقديم الاستشارات الائتمانية اللازمة':'Credit Advisory Services','تقديم الاستشارات الائتمانية':'Credit Advisory','رفع أو تعديل الإقرار الزكوي على منصة الهيئة':'Submit/Amend Zakat Declaration','رفع/تعديل الإقرار الزكوي':'Submit/Amend Zakat Declaration',
+  'وقف ذري':'Family Waqf','وقف خاص':'Private Waqf','وقف عام':'Public Waqf',
+  'فور التوقيع على هذا العقد':'Upon signing this Contract','فور إصدار درافت الميزانية للاعتماد':'Upon issuance of the draft financial statements for approval','فور إصدار شهادة التصنيف الرسمية':'Upon issuance of the official classification certificate','دفعة إضافية':'Additional Payment',
+  'جدة - طريق الأمير سلطان - حي المحمدية - أمام مستشفى الحبيب — العنوان المختصر JEMA7301':'Jeddah - Prince Sultan Road - Al Muhammadiyah District - Opposite Al Habib Hospital - Short Address JEMA7301',
+  '― منطقة الرياض ―':'— Riyadh Region —','― منطقة مكة المكرمة ―':'— Makkah Region —','― منطقة المدينة المنورة ―':'— Madinah Region —','― المنطقة الشرقية ―':'— Eastern Province —','― منطقة عسير ―':'— Asir Region —','― منطقة جازان ―':'— Jazan Region —','― منطقة نجران ―':'— Najran Region —','― منطقة الباحة ―':'— Al Baha Region —','― منطقة تبوك ―':'— Tabuk Region —','― منطقة حائل ―':'— Hail Region —','― منطقة الحدود الشمالية ―':'— Northern Borders Region —','― منطقة الجوف ―':'— Al Jouf Region —','― منطقة القصيم ―':'— Qassim Region —',
+  'اسم المؤسسة':'Establishment Name','رقم السجل التجاري':'Commercial Registration No.','تاريخ السجل':'CR Date','تاريخ السجل (مثال: 1445/06/12 هـ)':'CR Date (e.g. 1445/06/12 H)','الاسم التجاري الجديد المقترح':'Proposed new trade name','اذكر التعديل المطلوب...':'Describe the required amendment...',
+  'منصة بلدي':'Balady Platform','استخراج جديد':'New Issuance','تجديد سنوي':'Annual Renewal','ترقية الدرجة':'Grade Upgrade','إضافة نشاط':'Add Activity','تصنيف بلدي — تصنيف المقاولين (منصة بلدي)':'Balady Classification - Contractors Classification (Balady Platform)',
+  'الرياض':'Riyadh','الخرج':'Al Kharj','الدوادمي':'Ad Dawadmi','المجمعة':'Al Majmaah','الزلفي':'Az Zulfi','شقراء':'Shaqra','حوطة بني تميم':'Hotat Bani Tamim','عفيف':'Afif','القويعية':'Al Quwayiyah','وادي الدواسر':'Wadi Al Dawasir','الأفلاج':'Al Aflaj','السليل':'As Sulayyil','ضرماء':'Durma','ثادق':'Thadiq','حريملاء':'Huraymila','رماح':'Rumah','المزاحمية':'Al Muzahimiyah','الحريق':'Al Hariq','مرات':'Marat',
+  'مكة المكرمة':'Makkah','جدة':'Jeddah','الطائف':'Taif','القنفذة':'Al Qunfudhah','الليث':'Al Lith','رابغ':'Rabigh','خليص':'Khulais','الكامل':'Al Kamil','الجموم':'Al Jumum','المويه':'Al Muwayh','ميسان':'Maysan','أضم':'Adham','تربة':'Turbah','رنية':'Ranyah','الخرمة':'Al Khurmah','بحرة':'Bahrah',
+  'المدينة المنورة':'Madinah','ينبع':'Yanbu','بدر':'Badr','مهد الذهب':'Mahd Adh Dhahab','العلا':'AlUla','خيبر':'Khaybar','الحناكية':'Al Henakiyah','وادي الفرع':'Wadi Al Fara',
+  'الدمام':'Dammam','الخبر':'Khobar','الظهران':'Dhahran','الأحساء (الهفوف)':'Al Ahsa (Hofuf)','القطيف':'Qatif','الجبيل':'Jubail','حفر الباطن':'Hafar Al Batin','الخفجي':'Khafji','رأس تنورة':'Ras Tanura','بقيق':'Abqaiq','النعيرية':'Nairyah','قرية العليا':'Qaryat Al Ulya','العديد':'Al Udayd',
+  'أبها':'Abha','خميس مشيط':'Khamis Mushait','بيشة':'Bishah','النماص':'Al Namas','محايل عسير':'Muhayil Asir','سراة عبيدة':'Sarat Abidah','ظهران الجنوب':'Dhahran Al Janub','رجال ألمع':'Rijal Almaa','بلقرن':'Balqarn','تثليث':'Tathlith','أحد رفيدة':'Ahad Rafidah','تنومة':'Tanomah','بارق':'Bariq','المجاردة':'Al Majardah',
+  'جازان':'Jazan','صبيا':'Sabya','أبو عريش':'Abu Arish','صامطة':'Samtah','بيش':'Baish','الدرب':'Ad Darb','الحرث':'Al Harth','ضمد':'Damad','فرسان':'Farasan','الريث':'Ar Rayth','هروب':'Harub','العارضة':'Al Aridhah','الطوال':'At Tuwal','فيفاء':'Fifa','العيدابي':'Al Edabi','أحد المسارحة':'Ahad Al Masarihah','الدائر':'Ad Dair',
+  'نجران':'Najran','شرورة':'Sharurah','حبونا':'Hubuna','بدر الجنوب':'Badr Al Janub','يدمة':'Yadamah','ثار':'Thar','خباش':'Khubash','الخرخير':'Al Kharkhir',
+  'الباحة':'Al Baha','بلجرشي':'Baljurashi','المندق':'Al Mandaq','المخواة':'Al Makhwah','قلوة':'Qilwah','العقيق':'Al Aqiq','القرى':'Al Qara','غامد الزناد':'Ghamid Al Zinad','الحجرة':'Al Hajrah',
+  'تبوك':'Tabuk','الوجه':'Al Wajh','ضباء':'Duba','تيماء':'Tayma','أملج':'Umluj','حقل':'Haql','البدع':'Al Bada','نيوم':'NEOM',
+  'حائل':'Hail','بقعاء':'Baqaa','الغزالة':'Al Ghazalah','الشنان':'Ash Shinan','الحائط':'Al Hait','الشملي':'Ash Shamli','موقق':'Mawqaq','السليمي':'As Sulaymi',
+  'عرعر':'Arar','رفحاء':'Rafha','طريف':'Turaif','العويقيلة':'Al Uwayqilah','جديدة عرعر':'Jadidat Arar',
+  'سكاكا':'Sakaka','القريات':'Qurayyat','دومة الجندل':'Dumat Al Jandal','طبرجل':'Tabarjal',
+  'بريدة':'Buraidah','عنيزة':'Unaizah','الرس':'Ar Rass','المذنب':'Al Mithnab','البكيرية':'Al Bukayriyah','البدائع':'Al Badayea','رياض الخبراء':'Riyadh Al Khabra','الأسياح':'Al Asyah','النبهانية':'An Nabhaniyah','الشماسية':'Ash Shimasiyah','عيون الجواء':'Uyun Al Jiwa','ضرية':'Dariyah','عقلة الصقور':'Uqlat As Suqur','دخنة':'Dukhnah'
+};
+
+const C_SERVICE_NAMES_EN = {
+  1:'Issue Classification Certificate',
+  2:'Renew Classification Certificate',
+  3:'Extend Classification Certificate',
+  4:'Update Classification Certificate',
+  5:'Issue Quality Certificate (ISO)',
+  6:'Issue Off-Plan Sales Qualification Certificate (WAFI)',
+  7:'Issue Real Estate Developer Certificate (VAT Refund)',
+  8:'Corporate Services',
+  9:'Add Domain to Classification Certificate',
+  10:'Engineering Consulting Firms & Offices',
+  11:'Financial Statements',
+  12:'Issue Certified Waqf Certificate from Competent Government Authority'
+};
+
+const C_CORP_SERVICE_LABELS_EN = {
+  formation:'Company Formation',
+  conversion:'Convert Establishment to Company',
+  amendment:'Amend Articles of Association',
+  "muwa'amah":"Alignment (Muwaa'amah)",
+  annual_confirmation:'Annual Confirmation',
+  beneficiary:'Add Ultimate Beneficial Owner',
+  lift_suspension:'Lift CR Suspension',
+  branches_to_companies:'Convert Branches to Companies',
+  cancel_establishment:'Cancel Establishment CR',
+  cancel_company:'Cancel Company CR'
+};
+
+const CONTRACT_CLAUSE_DEFAULTS_EN = {
+  pre: () => {
+    const company = v('companyName') || '[Company Name]';
+    const services = cGetSelectedServices().map(s => s.labelEn || cTranslateValue(s.label || '')).filter(Boolean);
+    const svcText = services.length ? services.join(', ') : 'the professional consulting services described in this Contract';
+    return `Whereas the First Party is a professional consulting company, and the Second Party (${company}) wishes to engage the First Party for ${svcText}, the Parties have agreed as follows:`;
+  },
+  c1: () => 'The foregoing preamble between the First Party and the Second Party ({company_name}) shall form an integral and complementary part of this Contract and shall be read together with all its provisions.',
+  c2: () => {
+    const total = (parseFloat((document.getElementById('baseAmount')||{}).value)||0)*1.15;
+    const words = total ? numToEnglish(total) : '[amount in words]';
+    const amtStr = total ? total.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:2}) + ' SAR' : '[amount]';
+    return `The Second Party ({company_name}) shall pay the First Party professional fees in the amount of (${amtStr}), only ${words}, inclusive of VAT at 15%, in consideration of the First Party providing the services set out in the preamble and this Contract.`;
+  },
+  c3: () => 'The Parties agree that the professional fees shall be paid according to the payment schedule stated in this Contract.',
+  c4: () => 'The Second Party ({company_name}) shall provide the First Party with all required documents, data and information, including financial, administrative and technical records, within a maximum of seven (7) working days from signing this Contract so the First Party can perform the services.',
+  c5: () => {
+    const dur = v('duration') || '—';
+    const pl = cTranslateValue(v('platform') || 'منصة بلدي');
+    return `The First Party shall provide the services referred to in this Contract to the Second Party ({company_name}) within (${dur} working days), commencing from the date of signing this Contract, receipt of the first payment, and completion of all required documents through ${pl}. The agreed outcome remains subject to any additional requirements, procedures, or delays attributable to the competent authority or the Second Party. The Second Party may not terminate this Contract after signing and paying the first payment, and shall bear all government fees payable to relevant authorities.`;
+  },
+  c6: () => 'The Parties acknowledge that they have read, understood and accepted all provisions of this Contract. No amendment or change shall be valid unless made in writing and signed by both Parties. Any dispute shall first be resolved amicably; failing that, the competent Saudi courts shall have jurisdiction.',
+  c7: () => 'This Contract has been executed electronically in one original copy consisting of its pages, to be delivered to both Parties through electronic communication channels and signed by the Parties or their authorized representatives.',
+  m3: () => [
+    'Provide the agreed services with professional care, competence and efficiency in accordance with the laws and regulations applicable in the Kingdom of Saudi Arabia.',
+    'Assign a qualified and specialized team to perform the services according to the agreed timeline.',
+    'Maintain strict confidentiality of all client information and documents and not disclose them to any third party except as permitted by this Contract or applicable law.',
+    'Notify the client in writing of any developments or additional requirements arising during execution.',
+    'Deliver the outputs and documents resulting from the services within the agreed dates.',
+    'Comply with professional governance standards and consulting ethics.'
+  ].join('\n'),
+  m4: () => [
+    'Provide the consultant with all documents, information and data required to perform the services accurately and on time.',
+    'Pay the consultant fees according to the payment schedule stated in Article 5 without delay.',
+    'Facilitate the consultant\'s work and grant the required authorizations to access the relevant authorities and platforms.',
+    'Cooperate with the consultant in responding to the competent authorities within the statutory periods.',
+    'Immediately notify the consultant of any change to its data or to the requested service.',
+    'Avoid direct communication with competent authorities regarding the service subject of this Contract except in coordination with the consultant.'
+  ].join('\n'),
+  m6: () => [
+    'Both Parties shall keep all exchanged information, documents and data strictly confidential and shall not disclose them to any third party without prior written consent, unless required by law or a judicial order.',
+    'The confidentiality obligation shall remain in force for three (3) years following expiry or termination of this Contract.',
+    'Outputs and documents produced under this Contract shall become the client\'s property after full payment of the fees, while the consultant retains the right to use them as an internal professional reference and for training purposes without disclosing the client name.',
+    'The consultant\'s methodologies, templates and tools shall remain the consultant\'s exclusive property and shall not transfer to the client.'
+  ].join('\n'),
+  m7: () => 'Neither Party shall be deemed in breach of its obligations under this Contract if performance is prevented by a force majeure event beyond its reasonable control, including natural disasters, war, government decisions, health precautionary measures, interruption of government electronic services, or similar events. The affected Party shall notify the other Party in writing within five (5) working days from the occurrence of the event and provide supporting evidence. Affected obligations shall be suspended for the duration of the event, and the Contract period shall be extended accordingly without liability on the affected Party.',
+  m8: () => [
+    'No provision of this Contract may be amended except by express written agreement signed by both Parties and attached as an addendum.',
+    'Either Party may terminate the Contract if the other Party commits a material breach and fails to remedy it within fifteen (15) days after receiving written notice.',
+    'If the Contract is terminated before completion for a reason attributable to the client, the consultant shall be entitled to fees corresponding to work actually performed up to the termination date, in addition to compensation for actual damages, if any.',
+    'If the Contract is terminated before completion for a reason attributable to the consultant without lawful justification, the consultant shall refund fees received for unperformed work.'
+  ].join('\n'),
+  m9: () => 'The Parties shall endeavor to settle any dispute arising out of the interpretation or performance of this Contract amicably through direct negotiation within thirty (30) days from the date the dispute arises. If no settlement is reached, either Party may resort to mediation through the Saudi Center for Commercial Arbitration or any approved body. If mediation fails, the competent Saudi courts in Riyadh shall have jurisdiction in accordance with the laws of the Kingdom of Saudi Arabia.',
+  m10: () => 'Notices and correspondence between the Parties shall be valid and effective if sent through any of the following means: the email address stated for each Party in this Contract, SMS to the registered mobile number, or hand delivery against written receipt. Each Party shall notify the other of any change in contact details within three (3) working days from such change.'
+};
+
+function cTranslateValue(value) {
+  if (!cIsEn()) return value;
+  return C_VALUE_TRANSLATIONS[value] || C_UI_TRANSLATIONS[value] || value;
+}
+function cTranslateList(arr) {
+  return (arr || []).map(cTranslateValue);
+}
+function cPaymentOrdinal(i) {
+  const en = ['First','Second','Third','Fourth','Fifth','Sixth','Seventh','Eighth','Ninth','Tenth'];
+  return cIsEn() ? ((en[i] || String(i+1)) + ' Payment') : ('الدفعة ' + (PAYMENT_ORDINALS[i] || (i+1)));
+}
+function cMoneyUnit() { return cIsEn() ? 'SAR' : 'ريال'; }
+function cAutoLabel() {
+  return cIsEn()
+    ? '<span style="color:var(--success);font-size:10px;font-weight:600;background:rgba(26,107,60,0.15);padding:1px 7px;border-radius:10px;margin-left:4px">Auto</span>'
+    : '<span style="color:var(--success);font-size:10px;font-weight:600;background:rgba(26,107,60,0.15);padding:1px 7px;border-radius:10px;margin-right:4px">✦ تلقائي</span>';
+}
+
+function applyContractLangText(root) {
+  if (!root) return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node) {
+      const p = node.parentElement;
+      if (!p || ['SCRIPT','STYLE','TEXTAREA','OPTION'].includes(p.tagName)) return NodeFilter.FILTER_REJECT;
+      if (p.closest('#docBody,#previewDocBody')) return NodeFilter.FILTER_REJECT;
+      const t = node.nodeValue.trim();
+      return t ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+    }
+  });
+  const nodes = [];
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+  nodes.forEach(node => {
+    if (!node._cArText) node._cArText = node.nodeValue;
+    const ar = node._cArText.trim();
+    const en = C_UI_TRANSLATIONS[ar] || C_VALUE_TRANSLATIONS[ar];
+    if (!en) {
+      node.nodeValue = node._cArText;
+      return;
+    }
+    const prefix = node._cArText.match(/^\s*/)[0];
+    const suffix = node._cArText.match(/\s*$/)[0];
+    node.nodeValue = cIsEn() ? prefix + en + suffix : node._cArText;
+  });
+}
+
+function applyContractLangInputs(root) {
+  if (!root) return;
+  root.querySelectorAll('input[placeholder], textarea[placeholder]').forEach(el => {
+    if (!el.dataset.cPhAr) el.dataset.cPhAr = el.getAttribute('placeholder') || '';
+    const ar = el.dataset.cPhAr;
+    el.setAttribute('placeholder', cIsEn() ? (C_UI_TRANSLATIONS[ar] || C_VALUE_TRANSLATIONS[ar] || ar) : ar);
+  });
+  root.querySelectorAll('[title]').forEach(el => {
+    if (!el.dataset.cTitleAr) el.dataset.cTitleAr = el.getAttribute('title') || '';
+    const ar = el.dataset.cTitleAr;
+    el.setAttribute('title', cIsEn() ? (C_UI_TRANSLATIONS[ar] || C_VALUE_TRANSLATIONS[ar] || ar) : ar);
+  });
+  root.querySelectorAll('option').forEach(opt => {
+    if (!opt.dataset.cTextAr) opt.dataset.cTextAr = opt.textContent.trim();
+    if (!opt.hasAttribute('value')) opt.value = opt.dataset.cTextAr;
+    const ar = opt.dataset.cTextAr;
+    opt.textContent = cIsEn() ? (C_UI_TRANSLATIONS[ar] || C_VALUE_TRANSLATIONS[ar] || ar) : ar;
+  });
+  root.querySelectorAll('optgroup[label]').forEach(group => {
+    if (!group.dataset.cLabelAr) group.dataset.cLabelAr = group.getAttribute('label') || '';
+    const ar = group.dataset.cLabelAr;
+    group.setAttribute('label', cIsEn() ? (C_VALUE_TRANSLATIONS[ar] || ar) : ar);
+  });
+  const p1Address = g('p1Address');
+  const arAddr = 'جدة - طريق الأمير سلطان - حي المحمدية - أمام مستشفى الحبيب — العنوان المختصر JEMA7301';
+  if (p1Address && (p1Address.value === arAddr || p1Address.value === C_VALUE_TRANSLATIONS[arAddr])) {
+    p1Address.value = cIsEn() ? C_VALUE_TRANSLATIONS[arAddr] : arAddr;
+  }
+  [
+    ['p1desc','فور التوقيع على هذا العقد'],
+    ['p2desc','فور إصدار درافت الميزانية للاعتماد'],
+    ['p3desc','فور إصدار شهادة التصنيف الرسمية']
+  ].forEach(([id, ar]) => {
+    const el = g(id);
+    const en = C_VALUE_TRANSLATIONS[ar];
+    if (el && (el.value === ar || el.value === en)) el.value = cIsEn() ? en : ar;
+  });
+}
+
+function applyContractLangChrome() {
+  const main = document.querySelector('.main');
+  if (main) {
+    main.classList.toggle('contract-ltr', cIsEn());
+    main.setAttribute('dir', cIsEn() ? 'ltr' : 'rtl');
+    main.setAttribute('lang', cIsEn() ? 'en' : 'ar');
+  }
+  const btn = g('contractLangToggleBtn');
+  if (btn) btn.textContent = cIsEn() ? '🇸🇦 العربية' : '🇬🇧 English';
+  const docBody = g('docBody');
+  if (docBody) {
+    docBody.classList.toggle('contract-doc-ltr', cIsEn());
+    docBody.setAttribute('dir', cIsEn() ? 'ltr' : 'rtl');
+    docBody.setAttribute('lang', cIsEn() ? 'en' : 'ar');
+  }
+}
+
+function applyContractLang() {
+  applyContractLangChrome();
+  [document.querySelector('.main'), document.getElementById('printModal')].forEach(root => {
+    applyContractLangText(root);
+    applyContractLangInputs(root);
+  });
+  if (typeof cInitServicesPanel === 'function') {
+    try { cInitServicesPanel(true); } catch(e) { console.warn(e); }
+  }
+  if (typeof renumberAllPayments === 'function') {
+    try { renumberAllPayments(); } catch(e) {}
+  }
+  if (typeof cReindexCancelEst === 'function') {
+    try { cReindexCancelEst(); } catch(e) {}
+  }
+  if (typeof cReindexCancelCo === 'function') {
+    try { cReindexCancelCo(); } catch(e) {}
+  }
+  if (typeof regenerateUneditedClauses === 'function') {
+    try { regenerateUneditedClauses(); } catch(e) {}
+  }
+  if (typeof calcVAT === 'function') {
+    try { calcVAT(); } catch(e) {}
+  }
+  if (typeof refreshContractIfReady === 'function') {
+    try { refreshContractIfReady(); } catch(e) {}
+  }
+  applyContractLangChrome();
+}
+
+function toggleContractLang() {
+  contractLang = cIsEn() ? 'ar' : 'en';
+  try { localStorage.setItem(CONTRACT_LANG_KEY, contractLang); } catch(e) {}
+  applyContractLang();
+  toast(cIsEn() ? 'Contract tab switched to English' : 'تم تحويل تبويب العقد إلى العربية');
+}
+window.addEventListener('DOMContentLoaded', function() {
+  setTimeout(function() {
+    try { applyContractLang(); } catch(e) { console.warn('contract language init failed:', e); }
+  }, 250);
+});
+
 function toast(msg, dur=3000) {
   const t = g('toast');
   t.textContent = msg;
@@ -4312,7 +4784,7 @@ function genNum() {
   const cn = `DAAM-${y}-${seq}`;
   g('contractNum').value = cn;
   syncPreview();
-  toast('✅ تم توليد رقم العقد: ' + cn);
+  toast(cIsEn() ? '✅ Contract number generated: ' + cn : '✅ تم توليد رقم العقد: ' + cn);
 }
 
 /* ── VAT CALC ── */
@@ -4320,10 +4792,10 @@ function calcVAT() {
   const base = parseFloat(g('baseAmount').value) || 0;
   const vat = base * 0.15;
   const total = base + vat;
-  g('vatAmt').textContent = num(vat) + ' ريال';
-  g('totalDisplay').textContent = num(total) + ' ريال';
+  g('vatAmt').textContent = num(vat) + ' ' + cMoneyUnit();
+  g('totalDisplay').textContent = num(total) + ' ' + cMoneyUnit();
   // Auto-fill words
-  const words = numToArabic(total);
+  const words = cIsEn() ? numToEnglish(total) : numToArabic(total);
   const wordsEl = g('totalWords');
   if (wordsEl) { wordsEl.value = words; wordsEl.style.color = words ? 'var(--gold-glow)' : ''; }
   updateLinkedClauses();
@@ -4333,7 +4805,7 @@ function calcVAT() {
 function autoFillPayWords(amtId, wordsId) {
   const n = parseFloat(g(amtId).value) || 0;
   const el = g(wordsId);
-  if (el) { el.value = n ? numToArabic(n) : ''; el.style.color = n ? 'var(--gold-glow)' : ''; }
+  if (el) { el.value = n ? (cIsEn() ? numToEnglish(n) : numToArabic(n)) : ''; el.style.color = n ? 'var(--gold-glow)' : ''; }
   updateLinkedClauses();
   syncPreview();
 }
@@ -4491,14 +4963,14 @@ function validateStep(n) {
         ok = false;
       }
     });
-    if (!ok) toast('⚠ يرجى تعبئة الحقول المطلوبة');
+    if (!ok) toast(cIsEn() ? '⚠ Please fill in the required fields' : '⚠ يرجى تعبئة الحقول المطلوبة');
   }
 
   // التحقق من اختيار خدمة واحدة على الأقل من كتالوج الخدمات (بدلاً من حقل الدرجة المحذوف)
   if (n === 3) {
     const cSvcCount = document.querySelectorAll('input[name="cService"]:checked').length;
     if (cSvcCount === 0) {
-      toast('⚠ يرجى اختيار خدمة واحدة على الأقل');
+      toast(cIsEn() ? '⚠ Please select at least one service' : '⚠ يرجى اختيار خدمة واحدة على الأقل');
       return false;
     }
   }
@@ -4512,15 +4984,15 @@ function updateClassification() { syncPreview(); }
 /* ── SYNC LIVE PREVIEW (lightweight, no full render) ── */
 function syncPreview() {
   const cn = v('contractNum');
-  g('cnDisplay').textContent = cn ? 'رقم العقد: ' + cn : 'رقم العقد: —';
+  g('cnDisplay').textContent = cn ? (cIsEn() ? 'Contract No.: ' + cn : 'رقم العقد: ' + cn) : (cIsEn() ? 'Contract No.: —' : 'رقم العقد: —');
 
   // Update status dot if company entered
   if (v('companyName')) {
     g('statusDot').classList.add('ready');
-    g('statusLabel').textContent = 'البيانات جاهزة للإنشاء';
+    g('statusLabel').textContent = cIsEn() ? 'Data ready for generation' : 'البيانات جاهزة للإنشاء';
   } else {
     g('statusDot').classList.remove('ready');
-    g('statusLabel').textContent = 'في انتظار البيانات...';
+    g('statusLabel').textContent = cIsEn() ? 'Waiting for data...' : 'في انتظار البيانات...';
   }
 }
 
@@ -4833,13 +5305,15 @@ const CLAUSE_ID_MAP = {m3:'cM3',m4:'cM4',m6:'cM6',m7:'cM7',m8:'cM8',m9:'cM9',m10
 /* استبدال الـtoken باسم الشركة (للنصوص المحفوظة كافتراضيات قديمة) */
 function injectCompanyName(text) {
   if (typeof text !== 'string') return text;
-  var co = v('companyName') || '[اسم الشركة]';
-  return text.replace(/\{اسم_الشركة\}/g, co);
+  var co = v('companyName') || (cIsEn() ? '[Company Name]' : '[اسم الشركة]');
+  return text.replace(/\{اسم_الشركة\}/g, co).replace(/\{company_name\}/g, co);
 }
 
 /* توليد النص الافتراضي لبند معيّن مع كل البيانات الحالية */
 function generateClauseText(k) {
-  var raw = (customDefaults[k] !== undefined) ? customDefaults[k] : CLAUSE_DEFAULTS[k]();
+  var source = cIsEn() && CONTRACT_CLAUSE_DEFAULTS_EN[k] ? CONTRACT_CLAUSE_DEFAULTS_EN : CLAUSE_DEFAULTS;
+  var langDefaults = cIsEn() ? customDefaultsEn : customDefaults;
+  var raw = (langDefaults[k] !== undefined) ? langDefaults[k] : source[k]();
   return injectCompanyName(raw);
 }
 
@@ -4883,6 +5357,7 @@ function onClauseEdit(elId) {
 
 /* Custom defaults — محفوظة دائماً في localStorage */
 var STORAGE_KEY = 'daam_clause_defaults';
+var STORAGE_KEY_EN = 'daam_clause_defaults_en';
 
 function loadCustomDefaults() {
   try {
@@ -4897,6 +5372,12 @@ function saveCustomDefaultsToStorage(obj) {
 
 /* تحميل الافتراضيات المحفوظة عند بدء التشغيل */
 var customDefaults = loadCustomDefaults();
+var customDefaultsEn = (() => {
+  try {
+    var raw = localStorage.getItem(STORAGE_KEY_EN);
+    return raw ? JSON.parse(raw) : {};
+  } catch(e) { return {}; }
+})();
 
 function resetClause(elId, key) {
   var el = g(elId);
@@ -4909,11 +5390,16 @@ function resetClause(elId, key) {
 function saveClauseAsDefault(elId, key) {
   var el = g(elId);
   if (!el) return;
-  customDefaults[key] = el.value;
-  saveCustomDefaultsToStorage(customDefaults);
+  if (cIsEn()) {
+    customDefaultsEn[key] = el.value;
+    try { localStorage.setItem(STORAGE_KEY_EN, JSON.stringify(customDefaultsEn)); } catch(e) {}
+  } else {
+    customDefaults[key] = el.value;
+    saveCustomDefaultsToStorage(customDefaults);
+  }
   /* بعد الحفظ كافتراضي، نزيل علامة التحرير */
   el.setAttribute('data-edited', 'false');
-  toast('✅ تم حفظ النص الحالي كافتراضي دائم');
+  toast(cIsEn() ? '✅ Current text saved as permanent default' : '✅ تم حفظ النص الحالي كافتراضي دائم');
 }
 
 function toggleClause(ceId) {
@@ -4930,7 +5416,7 @@ function addClause() {
   const id = 'extraClause_' + extraClauseCount;
   const ceId = 'ce_extra_' + extraClauseCount;
   const num = 7 + extraClauseCount;
-  const ordinal = arabicOrdinals[num] || 'الإضافي ' + extraClauseCount;
+  const ordinal = cIsEn() ? ('Additional ' + extraClauseCount) : (arabicOrdinals[num] || 'الإضافي ' + extraClauseCount);
   const div = document.createElement('div');
   div.className = 'clause-editor open';
   div.id = ceId;
@@ -4939,26 +5425,26 @@ function addClause() {
     <div class="clause-editor-head">
       <div style="display:flex;align-items:center;gap:10px;flex:1" onclick="toggleClause('${ceId}')">
         <div class="clause-editor-num">${num}</div>
-        <div class="clause-editor-title">البند ${ordinal}</div>
+        <div class="clause-editor-title">${cIsEn() ? 'Clause ' + ordinal : 'البند ' + ordinal}</div>
         <span class="clause-editor-toggle">▼</span>
       </div>
       <button class="btn-delete-card" style="margin-right:6px" onclick="deleteClause('${ceId}')">
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-        حذف
+        ${cIsEn() ? 'Delete' : 'حذف'}
       </button>
     </div>
     <div class="clause-editor-body">
-      <textarea class="clause-ta" id="${id}" rows="4" placeholder="اكتب نص البند هنا..." oninput="syncPreview()"></textarea>
+      <textarea class="clause-ta" id="${id}" rows="4" placeholder="${cIsEn() ? 'Write the clause text here...' : 'اكتب نص البند هنا...'}" oninput="syncPreview()"></textarea>
     </div>`;
   g('extraClausesContainer').appendChild(div);
   g(id).focus();
-  toast('✅ تمت إضافة بند جديد');
+  toast(cIsEn() ? '✅ New clause added' : '✅ تمت إضافة بند جديد');
 }
 
 function deleteClause(ceId) {
   const el = g(ceId);
   if (el) { el.style.opacity = '0'; el.style.transform = 'translateX(-10px)'; setTimeout(() => el.remove(), 200); }
-  toast('🗑 تم حذف البند');
+  toast(cIsEn() ? '🗑 Clause deleted' : '🗑 تم حذف البند');
 }
 
 function getExtraClauses() {
@@ -4987,14 +5473,14 @@ function renumberAllPayments() {
     if (!card || card.getAttribute('data-deleted') === '1' || card.style.display === 'none') return;
     counter++;
     const titleEl = card.querySelector('.static-pay-title');
-    if (titleEl) titleEl.textContent = 'الدفعة ' + (PAYMENT_ORDINALS[counter-1] || counter);
+    if (titleEl) titleEl.textContent = cPaymentOrdinal(counter-1);
   });
   // الدفعات الإضافية
   const extraCards = g('extraPaymentsContainer') ? g('extraPaymentsContainer').querySelectorAll('.card') : [];
   extraCards.forEach(card => {
     counter++;
     const titleEl = card.querySelector('.extra-pay-title');
-    if (titleEl) titleEl.textContent = 'الدفعة ' + (PAYMENT_ORDINALS[counter-1] || counter);
+    if (titleEl) titleEl.textContent = cPaymentOrdinal(counter-1);
   });
 }
 
@@ -5004,7 +5490,7 @@ function addPayment() {
   const aId = 'pXa_' + idx;
   const wId = 'pXw_' + idx;
   const cardId = 'payCard_' + idx;
-  const autoLabel = '<span style="color:var(--success);font-size:10px;font-weight:600;background:rgba(26,107,60,0.15);padding:1px 7px;border-radius:10px;margin-right:4px">✦ تلقائي</span>';
+  const autoLabel = cAutoLabel();
   const div = document.createElement('div');
   div.className = 'card';
   div.id = cardId;
@@ -5012,31 +5498,31 @@ function addPayment() {
     <div class="card-header-row">
       <div class="card-title" style="margin-bottom:0">
         <span>${paymentIcons[(idx-1)%paymentIcons.length]}</span>
-        <span class="extra-pay-title">الدفعة الرابعة</span>
+        <span class="extra-pay-title">${cPaymentOrdinal(3)}</span>
       </div>
       <button class="btn-delete-card" onclick="deletePayment(this,'x${idx}')">
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-        حذف
+        ${cIsEn() ? 'Delete' : 'حذف'}
       </button>
     </div>
     <div class="fg" style="margin-top:8px">
-      <label>شرح الدفعة</label>
-      <input class="fi" id="pXlabel_${idx}" type="text" placeholder="مثال: عند تسليم التقرير النهائي" value="" oninput="updateLinkedClauses()">
+      <label>${cIsEn() ? 'Payment Description' : 'شرح الدفعة'}</label>
+      <input class="fi" id="pXlabel_${idx}" type="text" placeholder="${cIsEn() ? 'Example: upon delivery of the final report' : 'مثال: عند تسليم التقرير النهائي'}" value="" oninput="updateLinkedClauses()">
     </div>
     <div class="amt-row" style="margin-top:8px">
       <div class="fg">
-        <label>المبلغ (ريال)</label>
+        <label>${cIsEn() ? 'Amount (SAR)' : 'المبلغ (ريال)'}</label>
         <input class="fi" id="${aId}" type="number" placeholder="0" oninput="autoFillPayWords('${aId}','${wId}')">
       </div>
       <div class="fg">
-        <label>بالكلمات ${autoLabel}</label>
-        <input class="fi" id="${wId}" placeholder="يُحسب تلقائياً..." readonly style="color:var(--gold-glow);cursor:default">
+        <label>${cIsEn() ? 'In Words' : 'بالكلمات'} ${autoLabel}</label>
+        <input class="fi" id="${wId}" placeholder="${cIsEn() ? 'Calculated automatically...' : 'يُحسب تلقائياً...'}" readonly style="color:var(--gold-glow);cursor:default">
       </div>
     </div>`;
   g('extraPaymentsContainer').appendChild(div);
   renumberAllPayments();
   updateLinkedClauses();
-  toast('✅ تمت إضافة دفعة جديدة');
+  toast(cIsEn() ? '✅ New payment added' : '✅ تمت إضافة دفعة جديدة');
 }
 
 function deletePayment(btn, idx) {
@@ -5061,7 +5547,7 @@ function deletePayment(btn, idx) {
     }, 200);
   }
   setTimeout(() => updateLinkedClauses(), 250);
-  toast('🗑 تم حذف الدفعة');
+  toast(cIsEn() ? '🗑 Payment deleted' : '🗑 تم حذف الدفعة');
 }
 
 // Check if a static payment card (1,2,3) was deleted by the user
@@ -5082,7 +5568,7 @@ function getExtraPayments() {
     if (!aId) return;
     const amt = parseFloat(g(aId)?.value) || 0;
     const wrd = g(wId)?.value || '';
-    const lbl = descEl?.value?.trim() || 'دفعة إضافية';
+    const lbl = descEl?.value?.trim() || (cIsEn() ? 'Additional Payment' : 'دفعة إضافية');
     if (amt) result.push({ label: lbl, amt, words: wrd });
   });
   return result;
@@ -5110,12 +5596,199 @@ function getAllPayments() {
   return out;
 }
 
+function getContractLogoSrc() {
+  const img = document.querySelector('.topbar-logo img, .login-logo img');
+  return img ? img.getAttribute('src') : '';
+}
+
+function cHtmlEscape(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
+
+function cLinesHtml(text) {
+  const lines = String(text || '').split('\n').map(s => s.trim()).filter(Boolean);
+  if (!lines.length) return cHtmlEscape(text || '');
+  if (lines.length === 1) return cHtmlEscape(lines[0]);
+  return '<ol style="margin:8px 0 0 22px;padding:0;line-height:1.9">' + lines.map(l => '<li>' + cHtmlEscape(l) + '</li>').join('') + '</ol>';
+}
+
+function cScopeItemsEn() {
+  const raw = g('cScope')?.value || '';
+  const manual = raw.split('\n').map(s => s.trim()).filter(Boolean);
+  if (manual.length) return manual.map(cTranslateValue);
+  const items = [];
+  cGetSelectedServices().forEach(s => {
+    if (Array.isArray(s.itemsEn) && s.itemsEn.length) s.itemsEn.forEach(i => items.push((s.baseNameEn || s.labelEn || s.baseName) + ' - ' + i));
+    else items.push(s.labelEn || s.baseNameEn || cTranslateValue(s.baseName));
+  });
+  return items;
+}
+
+function buildContractHtmlEn(D) {
+  const logo = getContractLogoSrc();
+  const hDate = `${D.hD||'__'} ${cTranslateValue(D.hM||'__')} ${D.hY||'____'} H`;
+  const mDate = `${D.mD||'__'} ${cTranslateValue(D.mM||'__')} ${D.mY||'____'} G`;
+  const dateLine = D.dayName
+    ? `on ${cTranslateValue(D.dayName)} ${hDate}, corresponding to ${mDate}`
+    : `${hDate}, corresponding to ${mDate}`;
+  const totalWords = D.totalAmt ? numToEnglish(D.totalAmt) : '';
+  const payments = D.allPayments || [];
+  const scopeItems = cScopeItemsEn();
+  const clauseText = key => injectCompanyName((CONTRACT_CLAUSE_DEFAULTS_EN[key] ? CONTRACT_CLAUSE_DEFAULTS_EN[key]() : '') || '');
+  const editable = key => {
+    const el = g(CLAUSE_ID_MAP[key]);
+    if (!el) return clauseText(key);
+    const txt = el.value.trim();
+    const arDefault = CLAUSE_DEFAULTS[key] ? injectCompanyName(CLAUSE_DEFAULTS[key]()) : '';
+    return (!txt || txt === arDefault) ? clauseText(key) : txt;
+  };
+  const payRows = payments.length ? payments.map((p,i) => {
+    const words = p.amt ? (p.words && /riyal|halala|sar/i.test(p.words) ? p.words : numToEnglish(p.amt)) : '';
+    return `<tr>
+      <td style="font-weight:700;white-space:nowrap">${cPaymentOrdinal(i)}</td>
+      <td>${cHtmlEscape(cTranslateValue(p.desc || '—'))}</td>
+      <td>${p.amt ? num(p.amt) + ' SAR' : '<span class="ph">—</span>'}</td>
+      <td>${words ? cHtmlEscape(words) : '<span class="ph">—</span>'}</td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="4" style="text-align:center;color:#999;padding:20px">No payments added</td></tr>`;
+
+  const article = (n, title, body) => `
+    <div class="clause">
+      <span class="clause-label">Article ${n} - ${title}</span>
+      ${body}
+    </div>`;
+
+  return `
+    <div class="doc-header" dir="ltr" lang="en">
+      <div class="bismillah">In the Name of Allah, the Most Gracious, the Most Merciful</div>
+      <div class="doc-logo-wrap">${logo ? `<img class="doc-logo" src="${logo}" alt="AL-DAAM Logo">` : ''}</div>
+      <div class="title">Service Agreement</div>
+      <div class="subtitle-band">
+        <span class="subtitle-deco">❖</span>
+        Classification File Preparation and Follow-up Services
+        <span class="subtitle-deco">❖</span>
+      </div>
+      <div class="doc-header-meta">
+        <span>Contract No.: <strong>${cHtmlEscape(D.cn)}</strong></span>
+        <span>Date: <strong>${cHtmlEscape(hDate)}</strong></span>
+      </div>
+    </div>
+
+    <div class="doc-intro" dir="ltr">
+      On <strong>${cHtmlEscape(dateLine)}</strong>, with Allah's assistance, the following Parties agreed as follows:
+    </div>
+
+    <div class="party-block" dir="ltr">
+      <span class="pb-badge">First Party</span>
+      <span class="pb-name">AL-DAAM Company for Professional Consulting</span>
+      <div class="pb-detail">
+        Unified No.: <strong>(7012425497)</strong>, dated <bdi>22</bdi> / <bdi>7</bdi> / <bdi>1433</bdi> H - Jeddah<br>
+        National Address: <strong>Jeddah - Prince Sultan Road - Al Muhammadiyah District - Opposite Al Habib Hospital - Short Address JEMA7301</strong><br>
+        Represented by: <strong>Zakaria Ali Alqahtani</strong> - Company Manager
+      </div>
+    </div>
+
+    <div class="party-block" dir="ltr">
+      <span class="pb-badge">Second Party</span>
+      <span class="pb-name">${cHtmlEscape(D.company)}</span>
+      <div class="pb-detail">
+        Unified No.: <strong>(${cHtmlEscape(D.unified||'—')})</strong>, dated ${cHtmlEscape(D.issued||'—')} H${D.issuedG ? ' corresponding to ' + cHtmlEscape(D.issuedG) + ' G' : ''} - ${cHtmlEscape(cTranslateValue(D.city))}${D.p2Addr ? ` &nbsp;|&nbsp; National Address: <strong>${cHtmlEscape(D.p2Addr)}</strong>` : ``}<br>
+        Represented by: <strong>${cHtmlEscape(D.rep||'—')}</strong> (${cHtmlEscape(cTranslateValue(D.repTitle))})
+        ${getRepDocNotice()}
+      </div>
+    </div>
+
+    <div class="doc-divider"></div>
+
+    <div class="preamble" dir="ltr">
+      <div class="preamble-head">Preamble</div>
+      <div class="preamble-body">${cHtmlEscape(clauseText('pre'))}</div>
+    </div>
+
+    ${article(1, 'Preamble and Definitions', cHtmlEscape(clauseText('c1')))}
+    ${article(2, 'Subject Matter and Scope of Services',
+      `<p>The First Party shall provide the professional services selected in this Contract, including:</p>` +
+      (scopeItems.length ? `<ol style="margin:8px 0 0 22px;padding:0;line-height:1.9">${scopeItems.map(i => '<li>' + cHtmlEscape(i) + '</li>').join('')}</ol>` : `<p>${cHtmlEscape(cGetSelectedServices().map(s => s.labelEn || s.label).join(', ') || 'the agreed consulting services')}</p>`)
+    )}
+    ${article(3, 'Obligations of the First Party (Consultant)', cLinesHtml(editable('m3')))}
+    ${article(4, 'Obligations of the Second Party (Client)', cLinesHtml(editable('m4')))}
+    <div class="clause" dir="ltr">
+      <span class="clause-label">Article 5 - Fees and Payment Mechanism</span>
+      ${cHtmlEscape(clauseText('c2'))}
+      <br>
+      <table class="pay-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Payment Milestone</th>
+            <th>Amount in Figures</th>
+            <th>Amount in Words</th>
+          </tr>
+        </thead>
+        <tbody>${payRows}</tbody>
+        <tfoot>
+          <tr>
+            <td colspan="2">Total Including VAT (15%)</td>
+            <td>${num(D.totalAmt)} SAR</td>
+            <td>${cHtmlEscape(totalWords || D.totalWords || '—')}</td>
+          </tr>
+        </tfoot>
+      </table>
+      <p style="margin-top:10px">${cHtmlEscape(clauseText('c5'))}</p>
+    </div>
+    ${article(6, 'Confidentiality and Intellectual Property', cLinesHtml(editable('m6')))}
+    ${article(7, 'Force Majeure', cLinesHtml(editable('m7')))}
+    ${article(8, 'Amendment and Termination', cLinesHtml(editable('m8')))}
+    ${article(9, 'Dispute Resolution', cLinesHtml(editable('m9')))}
+    ${article(10, 'Notices and Communication', cLinesHtml(editable('m10')))}
+
+    ${D.notes ? `<div class="clause"><span class="clause-label">Additional Notes</span>${cHtmlEscape(D.notes)}</div>` : ''}
+    ${D.extraClauses.map((c, i) => `<div class="clause"><span class="clause-label">Additional Clause ${i+1}</span>${cHtmlEscape(c.text)}</div>`).join('')}
+
+    <div class="sig-section" dir="ltr">
+      <div class="sig-row">
+        <div class="sig-box sig-box-auth">
+          <div class="sig-box-title">First Party</div>
+          <div class="sig-box-sub">AL-DAAM Company for Professional Consulting</div>
+          <div class="sig-line"></div>
+          <div class="sig-line-label">Name: Zakaria Ali Alqahtani</div>
+          <div class="sig-slot sig-slot-signature">
+            <div class="sig-line"></div>
+            <div class="sig-line-label">Signature</div>
+            ${getAuthSig()}
+          </div>
+          <div class="sig-slot sig-slot-stamp">
+            <div class="sig-line"></div>
+            <div class="sig-line-label">Official Stamp</div>
+            ${getAuthStamp()}
+          </div>
+        </div>
+        <div class="sig-box">
+          <div class="sig-box-title">Second Party</div>
+          <div class="sig-box-sub">${cHtmlEscape(D.company)}</div>
+          <div class="sig-line"></div>
+          <div class="sig-line-label">Name: ${cHtmlEscape(D.rep || '............................')}</div>
+          <div class="sig-line"></div>
+          <div class="sig-line-label">Signature</div>
+          <div class="sig-line"></div>
+          <div class="sig-line-label">Official Stamp</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 /* ── GENERATE CONTRACT ── */
 function generateContract() {
   if (!validateStep(2)) { goStep(2); return; }
   // التحقق من اختيار خدمة واحدة على الأقل (بدلاً من حقل الدرجة المحذوف)
   if (document.querySelectorAll('input[name="cService"]:checked').length === 0) {
-    goStep(3); toast('⚠ يرجى اختيار خدمة واحدة على الأقل'); return;
+    goStep(3); toast(cIsEn() ? '⚠ Please select at least one service' : '⚠ يرجى اختيار خدمة واحدة على الأقل'); return;
   }
 
   // Gather all values
@@ -5161,6 +5834,25 @@ function generateContract() {
     extraPayments: getExtraPayments(),
     allPayments: getAllPayments(),
   };
+
+  if (cIsEn()) {
+    const html = buildContractHtmlEn(D);
+    const docBody = g('docBody');
+    docBody.innerHTML = html;
+    docBody.classList.add('contract-doc-ltr');
+    docBody.setAttribute('dir', 'ltr');
+    docBody.setAttribute('lang', 'en');
+    g('emptyState').style.display = 'none';
+    g('contractWrapper').classList.add('visible');
+    g('btnPreview').disabled = false;
+    g('btnPrint').disabled = false;
+    const bsvEn = g('btnSave'); if (bsvEn) bsvEn.disabled = false;
+    g('statusDot').classList.add('ready');
+    g('statusLabel').textContent = 'Contract ready';
+    toast('✅ Contract generated successfully');
+    g('contractWrapper').scrollIntoView({ behavior:'smooth', block:'start' });
+    return;
+  }
 
   // Helpers
   const sp = (val, fb) => val
@@ -5334,6 +6026,9 @@ function generateContract() {
   `;
 
   g('docBody').innerHTML = html;
+  g('docBody').classList.remove('contract-doc-ltr');
+  g('docBody').setAttribute('dir', 'rtl');
+  g('docBody').setAttribute('lang', 'ar');
   g('emptyState').style.display = 'none';
   g('contractWrapper').classList.add('visible');
   g('btnPreview').disabled = false;
@@ -5504,9 +6199,10 @@ function paginateForPrint() {
 
   // إنشاء حاوية مخفية لقياس ارتفاع كل عنصر مع نفس عرض الطباعة
   const measureWrap = document.createElement('div');
+  const printIsEn = cIsEn() || (src.getAttribute('dir') === 'ltr');
   measureWrap.style.cssText =
     'position:absolute;left:-99999px;top:0;width:' + innerWidthPx + 'px;' +
-    'direction:rtl;font-family:Amiri,"Traditional Arabic",serif;' +
+    'direction:' + (printIsEn ? 'ltr' : 'rtl') + ';font-family:' + (printIsEn ? 'Georgia,"Times New Roman",serif' : 'Amiri,"Traditional Arabic",serif') + ';' +
     'font-size:13pt;line-height:1.9;color:#1a1a2e;visibility:hidden;';
   document.body.appendChild(measureWrap);
 
@@ -5531,6 +6227,11 @@ function paginateForPrint() {
     page.className = 'print-page';
     const inner = document.createElement('div');
     inner.className = 'print-page-inner';
+    if (printIsEn) {
+      inner.classList.add('contract-doc-ltr');
+      inner.setAttribute('dir', 'ltr');
+      inner.setAttribute('lang', 'en');
+    }
     page.appendChild(inner);
     printRoot.appendChild(page);
     return inner;
@@ -5964,12 +6665,12 @@ function clearFormForNewContract() {
   if (g('btnPreview')) g('btnPreview').disabled = true;
   if (g('btnPrint')) g('btnPrint').disabled = true;
   const bsvR = g('btnSave'); if (bsvR) bsvR.disabled = true;
-  if (g('vatAmt')) g('vatAmt').textContent = '0 ريال';
-  if (g('totalDisplay')) g('totalDisplay').textContent = '0.00 ريال';
+  if (g('vatAmt')) g('vatAmt').textContent = '0 ' + cMoneyUnit();
+  if (g('totalDisplay')) g('totalDisplay').textContent = '0.00 ' + cMoneyUnit();
   if (g('progressBar')) g('progressBar').style.width = '25%';
-  if (g('cnDisplay')) g('cnDisplay').textContent = 'رقم العقد: —';
+  if (g('cnDisplay')) g('cnDisplay').textContent = cIsEn() ? 'Contract No.: —' : 'رقم العقد: —';
   if (g('statusDot')) g('statusDot').classList.remove('ready');
-  if (g('statusLabel')) g('statusLabel').textContent = 'في انتظار البيانات...';
+  if (g('statusLabel')) g('statusLabel').textContent = cIsEn() ? 'Waiting for data...' : 'في انتظار البيانات...';
   clausesInited = false;
   extraClauseCount = 0; extraPayCount = 0;
   const bc = g('budgetCount'); if (bc) bc.value = '';
@@ -6028,7 +6729,7 @@ function startNewContract() {
   // If the form is empty, go straight to a fresh contract (no prompt)
   if (!hasFormData()) {
     clearFormForNewContract();
-    toast('📝 عقد جديد');
+    toast(cIsEn() ? '📝 New contract' : '📝 عقد جديد');
     return;
   }
   // Otherwise show the 3-option modal
@@ -6041,10 +6742,16 @@ function showNewContractModal() {
   if (existing) existing.remove();
 
   const hasLoaded = currentLoadedContractId !== null;
-  const title = hasLoaded ? 'هل تريد حفظ التعديلات على العقد الحالي؟' : 'لديك بيانات غير محفوظة';
-  const subtitle = hasLoaded
-    ? 'هذا العقد مُستدعى من قائمة العقود المحفوظة. اختر ما تريد فعله قبل البدء في عقد جديد.'
-    : 'قمت بإدخال بيانات في النموذج الحالي. اختر ما تريد فعله قبل البدء في عقد جديد.';
+  const title = cIsEn()
+    ? (hasLoaded ? 'Save changes to the current contract?' : 'You have unsaved data')
+    : (hasLoaded ? 'هل تريد حفظ التعديلات على العقد الحالي؟' : 'لديك بيانات غير محفوظة');
+  const subtitle = cIsEn()
+    ? (hasLoaded
+      ? 'This contract was loaded from saved contracts. Choose what to do before starting a new contract.'
+      : 'You have entered data in the current form. Choose what to do before starting a new contract.')
+    : (hasLoaded
+      ? 'هذا العقد مُستدعى من قائمة العقود المحفوظة. اختر ما تريد فعله قبل البدء في عقد جديد.'
+      : 'قمت بإدخال بيانات في النموذج الحالي. اختر ما تريد فعله قبل البدء في عقد جديد.');
 
   const overlay = document.createElement('div');
   overlay.id = 'newContractModal';
@@ -6061,14 +6768,14 @@ function showNewContractModal() {
       <div style="display:flex;flex-direction:column;gap:10px">
         <button id="ncmSave" style="padding:14px 18px;background:linear-gradient(135deg,#b8922a,#d4a93a);color:#111;border:none;border-radius:10px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:10px;transition:transform 0.15s">
           <span style="font-size:18px">💾</span>
-          <span>حفظ التعديلات ثم بدء عقد جديد</span>
+          <span>${cIsEn() ? 'Save changes, then start a new contract' : 'حفظ التعديلات ثم بدء عقد جديد'}</span>
         </button>
         <button id="ncmDiscard" style="padding:14px 18px;background:rgba(200,60,60,0.12);color:#e88;border:1px solid rgba(200,60,60,0.4);border-radius:10px;font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:10px;transition:background 0.15s">
           <span style="font-size:18px">🗑</span>
-          <span>تجاهل التعديلات وبدء عقد جديد</span>
+          <span>${cIsEn() ? 'Discard changes and start a new contract' : 'تجاهل التعديلات وبدء عقد جديد'}</span>
         </button>
         <button id="ncmCancel" style="padding:12px 18px;background:transparent;color:#888;border:1px solid rgba(255,255,255,0.1);border-radius:10px;font-family:inherit;font-size:14px;font-weight:500;cursor:pointer;margin-top:4px">
-          إلغاء — البقاء في العقد الحالي
+          ${cIsEn() ? 'Cancel — stay in current contract' : 'إلغاء — البقاء في العقد الحالي'}
         </button>
       </div>
     </div>
@@ -6090,14 +6797,14 @@ function showNewContractModal() {
     close();
     setTimeout(() => {
       clearFormForNewContract();
-      toast('✅ تم الحفظ — ابدأ عقداً جديداً');
+      toast(cIsEn() ? '✅ Saved — start a new contract' : '✅ تم الحفظ — ابدأ عقداً جديداً');
     }, 300);
   };
 
   g('ncmDiscard').onclick = () => {
     close();
     clearFormForNewContract();
-    toast('📝 تم بدء عقد جديد');
+    toast(cIsEn() ? '📝 New contract started' : '📝 تم بدء عقد جديد');
   };
 
   g('ncmCancel').onclick = close;
@@ -6115,12 +6822,12 @@ function resetAll() {
   g('btnPreview').disabled = true;
   g('btnPrint').disabled = true;
   const bsvR = g('btnSave'); if(bsvR) bsvR.disabled = true;
-  g('vatAmt').textContent = '0 ريال';
-  g('totalDisplay').textContent = '0.00 ريال';
+  g('vatAmt').textContent = '0 ' + cMoneyUnit();
+  g('totalDisplay').textContent = '0.00 ' + cMoneyUnit();
   g('progressBar').style.width = '25%';
-  g('cnDisplay').textContent = 'رقم العقد: —';
+  g('cnDisplay').textContent = cIsEn() ? 'Contract No.: —' : 'رقم العقد: —';
   g('statusDot').classList.remove('ready');
-  g('statusLabel').textContent = 'في انتظار البيانات...';
+  g('statusLabel').textContent = cIsEn() ? 'Waiting for data...' : 'في انتظار البيانات...';
   clausesInited = false;
   extraClauseCount = 0; extraPayCount = 0;
   // Reset budget/ISO fields
@@ -6142,7 +6849,8 @@ function resetAll() {
   });
   goStep(1);
   currentLoadedContractId = null;
-  toast('🔄 تم تصفير النموذج');
+  applyContractLang();
+  toast(cIsEn() ? '🔄 Form reset' : '🔄 تم تصفير النموذج');
 }
 
 /* ── INIT ── */
@@ -6440,10 +7148,11 @@ function saveContract() {
     'p2Address','repName','repTitle','repPhone','repEmail','city',
     'serviceType','platform','grade','opType','budgetCount',
     'duration','scopeNotes','cScope','baseAmount','totalWords',
-    'p1a','p1w','p2a','p2w','p3a','p3w'
+    'p1desc','p1a','p1w','p2desc','p2a','p2w','p3desc','p3a','p3w'
   ];
   const data = {};
   fieldIds.forEach(id => { const el = g(id); if (el) data[id] = el.value || ''; });
+  data._contractLang = contractLang;
   ['iso9001','iso45001','iso14001'].forEach(id => { const el = g(id); if (el) data[id] = el.checked; });
   const byg = g('budgetYearsGrid');
   data._budgetYearsHTML = byg ? byg.innerHTML : '';
@@ -6535,11 +7244,11 @@ function saveContract() {
 
   const all = getAllSavedContracts();
   const existIdx = data.contractNum ? all.findIndex(c => c.contractNum === data.contractNum) : -1;
-  if (existIdx >= 0) { all[existIdx] = contract; toast('✅ تم تحديث العقد المحفوظ'); }
-  else { all.unshift(contract); toast('✅ تم حفظ العقد بنجاح'); }
+  if (existIdx >= 0) { all[existIdx] = contract; toast(cIsEn() ? '✅ Saved contract updated' : '✅ تم تحديث العقد المحفوظ'); }
+  else { all.unshift(contract); toast(cIsEn() ? '✅ Contract saved successfully' : '✅ تم حفظ العقد بنجاح'); }
 
   try { localStorage.setItem(SC_KEY, JSON.stringify(all)); }
-  catch(e) { toast('⚠️ تعذّر الحفظ المحلي'); }
+  catch(e) { toast(cIsEn() ? '⚠️ Local save failed' : '⚠️ تعذّر الحفظ المحلي'); }
 
   // ── Save document attachment ──
   if (_repDocBase64) {
@@ -6703,6 +7412,10 @@ function loadContract(id) {
     currentLoadedContractId = String(c.id);
 
     const d = c.data || {};
+    if (d._contractLang && d._contractLang !== contractLang) {
+      contractLang = d._contractLang === 'en' ? 'en' : 'ar';
+      try { localStorage.setItem(CONTRACT_LANG_KEY, contractLang); } catch(e) {}
+    }
 
   // ── 1) استعادة جميع حقول النموذج (input/select/textarea) ──
   ['contractNum','dayName','hD','hM','hY','mD','mM','mY',
@@ -6711,7 +7424,7 @@ function loadContract(id) {
    'p2Address','repName','repTitle','repPhone','repEmail','city',
    'serviceType','platform','grade','opType','budgetCount',
    'duration','scopeNotes','cScope','baseAmount','totalWords',
-   'p1a','p1w','p2a','p2w','p3a','p3w'
+   'p1desc','p1a','p1w','p2desc','p2a','p2w','p3desc','p3a','p3w'
   ].forEach(fid => { const el = g(fid); if (el && d[fid] !== undefined) el.value = d[fid]; });
 
   ['iso9001','iso45001','iso14001'].forEach(fid => {
@@ -6962,7 +7675,7 @@ function loadContract(id) {
     const aEl = g(k+'a'), wEl = g(k+'w');
     if (aEl && wEl && typeof numToArabic === 'function') {
       const amt = parseFloat(aEl.value) || 0;
-      if (amt) wEl.value = numToArabic(amt);
+      if (amt) wEl.value = cIsEn() ? numToEnglish(amt) : numToArabic(amt);
     }
   });
   // تحديث البنود المرتبطة (البند الثاني والثالث المحسوبين تلقائياً)
@@ -6979,10 +7692,11 @@ function loadContract(id) {
   setTimeout(() => {
     if (typeof onRepTitleChange === 'function') { try { onRepTitleChange(); } catch(e) {} }
     if (typeof updateLinkedClauses === 'function') { try { updateLinkedClauses(); } catch(e) {} }
+    if (typeof applyContractLang === 'function') { try { applyContractLang(); } catch(e) {} }
     if (typeof syncPreview === 'function') { try { syncPreview(); } catch(e) {} }
   }, 400);
 
-  toast('📂 تم فتح العقد: ' + c.companyName);
+  toast(cIsEn() ? '📂 Contract opened: ' + c.companyName : '📂 تم فتح العقد: ' + c.companyName);
   } catch(err) {
     console.error('[loadContract] Error during loading:', err);
     alert('❌ حدث خطأ أثناء فتح العقد:\n' + err.message + '\n\nراجع الـ Console (F12) للتفاصيل.');
@@ -11035,8 +11749,11 @@ function qBuildServiceInfo(idx) {
   };
   if (!names[idx]) return null;
   const baseName = names[idx];
+  const baseNameEn = C_SERVICE_NAMES_EN[idx] || baseName;
   let detail = '';
+  let detailEn = '';
   let items = [];
+  let itemsEn = [];
   if (idx === 1 || idx === 2) {
     // درجات متعددة + لكل درجة مجالات تصنيف متعددة (متداخلة)
     const multiArr = qReadMultiValues('qGrade'+idx+'Multi');
@@ -11728,11 +12445,13 @@ function cToggleGradeChip(hiddenInputId, value, btnEl) {
 }
 function cBuildNestedGrades(container, gradesHidden, nestedHidden) {
   if (!container) return;
+  const isEn = cIsEn();
   const selectedGrades = qReadMultiValues(gradesHidden);
   const nested = qReadNestedObject(nestedHidden);
   container.innerHTML = '';
   Q_GRADES_DEF.forEach(grd => {
     const isSel = selectedGrades.indexOf(grd.value) >= 0;
+    const displayLabel = isEn ? grd.labelEn : grd.label;
     const wrapper = document.createElement('div');
     wrapper.className = 'q-parent-chip-wrapper';
     wrapper.style.marginBottom = '4px';
@@ -11741,7 +12460,7 @@ function cBuildNestedGrades(container, gradesHidden, nestedHidden) {
     btn.className = 'q-grade-chip' + (isSel ? ' selected' : '');
     btn.setAttribute('data-value', grd.value);
     btn.style.alignSelf = 'flex-start';
-    btn.innerHTML = '<span class="ico">' + grd.icon + '</span>' + grd.label;
+    btn.innerHTML = '<span class="ico">' + grd.icon + '</span>' + displayLabel;
     btn.onclick = function(e) {
       e.stopPropagation();
       cToggleNestedParent(gradesHidden, nestedHidden, grd.value, container);
@@ -11752,7 +12471,9 @@ function cBuildNestedGrades(container, gradesHidden, nestedHidden) {
       group.className = 'q-nested-group';
       const title = document.createElement('div');
       title.className = 'q-nested-title';
-      title.textContent = '↳ مجالات التصنيف لـ "' + grd.label + '" (يمكن اختيار أكثر من مجال):';
+      title.textContent = isEn
+        ? '↳ Classification domains for "' + displayLabel + '" (multiple allowed):'
+        : '↳ مجالات التصنيف لـ "' + grd.label + '" (يمكن اختيار أكثر من مجال):';
       group.appendChild(title);
       const chipsRow = document.createElement('div');
       chipsRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px';
@@ -11763,7 +12484,7 @@ function cBuildNestedGrades(container, gradesHidden, nestedHidden) {
         const isChildSel = childSelected.indexOf(dom.value) >= 0;
         cBtn.className = 'q-grade-chip' + (isChildSel ? ' selected' : '');
         cBtn.setAttribute('data-value', dom.value);
-        cBtn.innerHTML = '<span class="ico">' + dom.icon + '</span>' + dom.value;
+        cBtn.innerHTML = '<span class="ico">' + dom.icon + '</span>' + (isEn ? dom.labelEn : dom.value);
         cBtn.onclick = function(e) {
           e.stopPropagation();
           cToggleNestedChild(nestedHidden, grd.value, dom.value, cBtn);
@@ -11778,11 +12499,13 @@ function cBuildNestedGrades(container, gradesHidden, nestedHidden) {
 }
 function cBuildNestedDomains(container, domainsHidden, nestedHidden) {
   if (!container) return;
+  const isEn = cIsEn();
   const selectedDomains = qReadMultiValues(domainsHidden);
   const nested = qReadNestedObject(nestedHidden);
   container.innerHTML = '';
   Q_DOMAINS_DEF.forEach(dom => {
     const isSel = selectedDomains.indexOf(dom.value) >= 0;
+    const domLabel = isEn ? dom.labelEn : dom.value;
     const wrapper = document.createElement('div');
     wrapper.className = 'q-parent-chip-wrapper';
     wrapper.style.marginBottom = '4px';
@@ -11791,7 +12514,7 @@ function cBuildNestedDomains(container, domainsHidden, nestedHidden) {
     btn.className = 'q-grade-chip' + (isSel ? ' selected' : '');
     btn.setAttribute('data-value', dom.value);
     btn.style.alignSelf = 'flex-start';
-    btn.innerHTML = '<span class="ico">' + dom.icon + '</span>' + dom.value;
+    btn.innerHTML = '<span class="ico">' + dom.icon + '</span>' + domLabel;
     btn.onclick = function(e) {
       e.stopPropagation();
       cToggleNestedParent(domainsHidden, nestedHidden, dom.value, container);
@@ -11802,7 +12525,9 @@ function cBuildNestedDomains(container, domainsHidden, nestedHidden) {
       group.className = 'q-nested-group';
       const title = document.createElement('div');
       title.className = 'q-nested-title';
-      title.textContent = '↳ درجات التصنيف لمجال "' + dom.value + '" (يمكن اختيار أكثر من درجة):';
+      title.textContent = isEn
+        ? '↳ Classification grades for "' + domLabel + '" (multiple allowed):'
+        : '↳ درجات التصنيف لمجال "' + dom.value + '" (يمكن اختيار أكثر من درجة):';
       group.appendChild(title);
       const chipsRow = document.createElement('div');
       chipsRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px';
@@ -11813,7 +12538,7 @@ function cBuildNestedDomains(container, domainsHidden, nestedHidden) {
         const isChildSel = childSelected.indexOf(grd.value) >= 0;
         cBtn.className = 'q-grade-chip' + (isChildSel ? ' selected' : '');
         cBtn.setAttribute('data-value', grd.value);
-        cBtn.innerHTML = '<span class="ico">' + grd.icon + '</span>' + grd.label;
+        cBtn.innerHTML = '<span class="ico">' + grd.icon + '</span>' + (isEn ? grd.labelEn : grd.label);
         cBtn.onclick = function(e) {
           e.stopPropagation();
           cToggleNestedChild(nestedHidden, dom.value, grd.value, cBtn);
@@ -11917,13 +12642,13 @@ function cAddCancelEst(prefill) {
   row.style.cssText = 'background:rgba(184,146,42,0.06);border:1px solid var(--border);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:6px';
   row.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
-      <span style="font-size:11.5px;color:var(--gold-pale);font-weight:700">سجل #${list.children.length + 1}</span>
-      <button type="button" onclick="event.stopPropagation();cRemoveCancelEst(${id})" style="background:transparent;border:1px solid rgba(244,67,54,.4);color:#ff8a80;border-radius:5px;padding:3px 8px;font-size:11px;cursor:pointer">حذف</button>
+      <span style="font-size:11.5px;color:var(--gold-pale);font-weight:700">${cIsEn() ? 'CR #' : 'سجل #'}${list.children.length + 1}</span>
+      <button type="button" onclick="event.stopPropagation();cRemoveCancelEst(${id})" style="background:transparent;border:1px solid rgba(244,67,54,.4);color:#ff8a80;border-radius:5px;padding:3px 8px;font-size:11px;cursor:pointer">${cIsEn() ? 'Delete' : 'حذف'}</button>
     </div>
-    <input type="text" class="q-ce-name" placeholder="اسم المؤسسة" onclick="event.stopPropagation()" oninput="cSyncServiceType()" style="width:100%"/>
+    <input type="text" class="q-ce-name" placeholder="${cIsEn() ? 'Establishment Name' : 'اسم المؤسسة'}" onclick="event.stopPropagation()" oninput="cSyncServiceType()" style="width:100%"/>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-      <input type="text" class="q-ce-regnum" placeholder="رقم السجل التجاري" onclick="event.stopPropagation()" oninput="cSyncServiceType()"/>
-      <input type="text" class="q-ce-regdate" placeholder="تاريخ السجل" onclick="event.stopPropagation()" oninput="cSyncServiceType()"/>
+      <input type="text" class="q-ce-regnum" placeholder="${cIsEn() ? 'Commercial Registration No.' : 'رقم السجل التجاري'}" onclick="event.stopPropagation()" oninput="cSyncServiceType()"/>
+      <input type="text" class="q-ce-regdate" placeholder="${cIsEn() ? 'CR Date' : 'تاريخ السجل'}" onclick="event.stopPropagation()" oninput="cSyncServiceType()"/>
     </div>`;
   list.appendChild(row);
   if (prefill) {
@@ -11946,7 +12671,7 @@ function cReindexCancelEst() {
   if (!list) return;
   Array.from(list.children).forEach((row, i) => {
     const lbl = row.querySelector('span');
-    if (lbl) lbl.textContent = 'سجل #' + (i + 1);
+    if (lbl) lbl.textContent = (cIsEn() ? 'CR #' : 'سجل #') + (i + 1);
   });
 }
 function cReadCancelEst() {
@@ -11971,13 +12696,13 @@ function cAddCancelCo(prefill) {
   row.style.cssText = 'background:rgba(184,146,42,0.06);border:1px solid var(--border);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:6px';
   row.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
-      <span style="font-size:11.5px;color:var(--gold-pale);font-weight:700">سجل #${list.children.length + 1}</span>
-      <button type="button" onclick="event.stopPropagation();cRemoveCancelCo(${id})" style="background:transparent;border:1px solid rgba(244,67,54,.4);color:#ff8a80;border-radius:5px;padding:3px 8px;font-size:11px;cursor:pointer">حذف</button>
+      <span style="font-size:11.5px;color:var(--gold-pale);font-weight:700">${cIsEn() ? 'CR #' : 'سجل #'}${list.children.length + 1}</span>
+      <button type="button" onclick="event.stopPropagation();cRemoveCancelCo(${id})" style="background:transparent;border:1px solid rgba(244,67,54,.4);color:#ff8a80;border-radius:5px;padding:3px 8px;font-size:11px;cursor:pointer">${cIsEn() ? 'Delete' : 'حذف'}</button>
     </div>
-    <input type="text" class="q-cc-name" placeholder="اسم الشركة" onclick="event.stopPropagation()" oninput="cSyncServiceType()" style="width:100%"/>
+    <input type="text" class="q-cc-name" placeholder="${cIsEn() ? 'Company Name' : 'اسم الشركة'}" onclick="event.stopPropagation()" oninput="cSyncServiceType()" style="width:100%"/>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-      <input type="text" class="q-cc-regnum" placeholder="رقم السجل التجاري" onclick="event.stopPropagation()" oninput="cSyncServiceType()"/>
-      <input type="text" class="q-cc-regdate" placeholder="تاريخ السجل" onclick="event.stopPropagation()" oninput="cSyncServiceType()"/>
+      <input type="text" class="q-cc-regnum" placeholder="${cIsEn() ? 'Commercial Registration No.' : 'رقم السجل التجاري'}" onclick="event.stopPropagation()" oninput="cSyncServiceType()"/>
+      <input type="text" class="q-cc-regdate" placeholder="${cIsEn() ? 'CR Date' : 'تاريخ السجل'}" onclick="event.stopPropagation()" oninput="cSyncServiceType()"/>
     </div>`;
   list.appendChild(row);
   if (prefill) {
@@ -12000,7 +12725,7 @@ function cReindexCancelCo() {
   if (!list) return;
   Array.from(list.children).forEach((row, i) => {
     const lbl = row.querySelector('span');
-    if (lbl) lbl.textContent = 'سجل #' + (i + 1);
+    if (lbl) lbl.textContent = (cIsEn() ? 'CR #' : 'سجل #') + (i + 1);
   });
 }
 function cReadCancelCo() {
@@ -12049,8 +12774,11 @@ function cBuildServiceInfo(idx) {
   };
   if (!names[idx]) return null;
   const baseName = names[idx];
+  const baseNameEn = C_SERVICE_NAMES_EN[idx] || baseName;
   let detail = '';
+  let detailEn = '';
   let items = [];
+  let itemsEn = [];
   if (idx === 1 || idx === 2) {
     const multiArr = qReadMultiValues('cGrade'+idx+'Multi');
     const single = (g('cGrade'+idx) && g('cGrade'+idx).value) ? g('cGrade'+idx).value : '';
@@ -12060,25 +12788,36 @@ function cBuildServiceInfo(idx) {
     if (allGrades.length) {
       allGrades.forEach(grd => {
         const doms = Array.isArray(nested[grd]) ? nested[grd] : [];
-        if (doms.length) doms.forEach(d => items.push(grd + ' — ' + d));
-        else items.push(grd);
+        if (doms.length) doms.forEach(d => {
+          items.push(grd + ' — ' + d);
+          itemsEn.push(cTranslateValue(grd) + ' - ' + cTranslateValue(d));
+        });
+        else {
+          items.push(grd);
+          itemsEn.push(cTranslateValue(grd));
+        }
       });
     }
     detail = allGrades.length ? allGrades.join('، ') : '';
-    return { idx, baseName, items, label: baseName + (detail ? ' — ' + detail : '') };
+    detailEn = itemsEn.length ? itemsEn.join(', ') : '';
+    return { idx, baseName, baseNameEn, items, itemsEn, label: baseName + (detail ? ' — ' + detail : ''), labelEn: baseNameEn + (detailEn ? ' - ' + detailEn : '') };
   } else if (idx === 3 || idx === 4) {
     const multiArr = qReadMultiValues('cGrade'+idx+'Multi');
     const single = (g('cGrade'+idx) && g('cGrade'+idx).value) ? g('cGrade'+idx).value : '';
     const all = multiArr.length ? multiArr : (single ? [single] : []);
     items = all.slice();
+    itemsEn = cTranslateList(all);
     detail = all.length ? all.join('، ') : '';
-    return { idx, baseName, items, label: baseName + (detail ? ' — ' + detail : '') };
+    detailEn = itemsEn.length ? itemsEn.join(', ') : '';
+    return { idx, baseName, baseNameEn, items, itemsEn, label: baseName + (detail ? ' — ' + detail : ''), labelEn: baseNameEn + (detailEn ? ' - ' + detailEn : '') };
   } else if (idx === 5 || idx === 10) {
     const gs = g('cGrade'+idx);
     const selected = gs ? Array.from(gs.selectedOptions).map(o => o.value) : [];
     items = selected.slice();
+    itemsEn = cTranslateList(selected);
     detail = selected.length ? ' (' + selected.join('، ') + ')' : '';
-    return { idx, baseName, items, label: baseName + detail };
+    detailEn = itemsEn.length ? ' (' + itemsEn.join(', ') + ')' : '';
+    return { idx, baseName, baseNameEn, items, itemsEn, label: baseName + detail, labelEn: baseNameEn + detailEn };
   } else if (idx === 8) {
     const sel = qReadMultiValues('cGrade8Multi');
     const labels = {
@@ -12098,22 +12837,29 @@ function cBuildServiceInfo(idx) {
     const amOther = g('cGrade8AmendOther')?.value || '';
     items = sel.map(k => {
       let s = labels[k] || k;
+      let sEn = C_CORP_SERVICE_LABELS_EN[k] || s;
       if ((k === 'formation' || k === 'conversion') && ct) s += ' (' + ct + ')';
+      if ((k === 'formation' || k === 'conversion') && ct) sEn += ' (' + cTranslateValue(ct) + ')';
       if (k === 'amendment') {
         if (amType === 'other' && amOther) s += ' — ' + amOther;
         else if (amType) s += ' — ' + amType;
+        if (amType === 'other' && amOther) sEn += ' - ' + amOther;
+        else if (amType) sEn += ' - ' + cTranslateValue(amType);
       }
       if (k === 'cancel_establishment') {
         const ests = (typeof cReadCancelEst === 'function') ? cReadCancelEst() : [];
         if (ests.length) s += ' (' + ests.length + ' سجل)';
+        if (ests.length) sEn += ' (' + ests.length + ' CRs)';
       }
       if (k === 'cancel_company') {
         const cos = (typeof cReadCancelCo === 'function') ? cReadCancelCo() : [];
         if (cos.length) s += ' (' + cos.length + ' سجل)';
+        if (cos.length) sEn += ' (' + cos.length + ' CRs)';
       }
+      itemsEn.push(sEn);
       return s;
     });
-    return { idx, baseName, items, label: baseName + (items.length ? ' — ' + items.join('، ') : '') };
+    return { idx, baseName, baseNameEn, items, itemsEn, label: baseName + (items.length ? ' — ' + items.join('، ') : ''), labelEn: baseNameEn + (itemsEn.length ? ' - ' + itemsEn.join(', ') : '') };
   } else if (idx === 9) {
     const selKeys = qReadMultiValues('cGrade9');
     const nested = qReadNestedObject('cGrade9Nested');
@@ -12121,12 +12867,18 @@ function cBuildServiceInfo(idx) {
     if (selKeys.length) {
       selKeys.forEach(dom => {
         const grades = Array.isArray(nested[dom]) ? nested[dom] : [];
-        if (grades.length) grades.forEach(grd => items.push(dom + ' — ' + grd));
-        else items.push(dom);
+        if (grades.length) grades.forEach(grd => {
+          items.push(dom + ' — ' + grd);
+          itemsEn.push(cTranslateValue(dom) + ' - ' + cTranslateValue(grd));
+        });
+        else {
+          items.push(dom);
+          itemsEn.push(cTranslateValue(dom));
+        }
       });
     }
-    if (!selKeys.length) return { idx, baseName, items: [], label: baseName };
-    return { idx, baseName, items, label: baseName + ' — ' + selKeys.join('، ') };
+    if (!selKeys.length) return { idx, baseName, baseNameEn, items: [], itemsEn: [], label: baseName, labelEn: baseNameEn };
+    return { idx, baseName, baseNameEn, items, itemsEn, label: baseName + ' — ' + selKeys.join('، '), labelEn: baseNameEn + ' - ' + cTranslateList(selKeys).join(', ') };
   } else if (idx === 11) {
     const yearsMulti = qReadMultiValues('cGrade11YearMulti');
     const legacyYr = g('cGrade11Year')?.value || '';
@@ -12137,23 +12889,43 @@ function cBuildServiceInfo(idx) {
       if (key === 'تقديم الاستشارات الائتمانية اللازمة') return key + ' لميزانية سنة ' + yr;
       return key + ' لميزانية سنة ' + yr;
     };
+    const phraseForEn = (key, yr) => {
+      const k = cTranslateValue(key);
+      if (key === 'رفع أو تعديل الإقرار الزكوي على منصة الهيئة') return k + ' for fiscal year ' + yr;
+      if (key === 'تقديم الاستشارات الائتمانية اللازمة') return k + ' for financial statements of ' + yr;
+      return k + ' for financial statements of ' + yr;
+    };
     items = [];
+    itemsEn = [];
     if (selKeys.length && allYears.length) {
-      selKeys.forEach(k => allYears.forEach(yr => items.push(phraseFor(k, yr))));
-    } else if (selKeys.length) items = selKeys.slice();
-    else if (allYears.length) items = allYears.map(yr => 'ميزانية سنة ' + yr);
+      selKeys.forEach(k => allYears.forEach(yr => {
+        items.push(phraseFor(k, yr));
+        itemsEn.push(phraseForEn(k, yr));
+      }));
+    } else if (selKeys.length) {
+      items = selKeys.slice();
+      itemsEn = cTranslateList(selKeys);
+    }
+    else if (allYears.length) {
+      items = allYears.map(yr => 'ميزانية سنة ' + yr);
+      itemsEn = allYears.map(yr => 'Financial statements of ' + yr);
+    }
     let parts = [];
     if (allYears.length) parts.push('سنوات: ' + allYears.join('، '));
     if (selKeys.length) parts.push(selKeys.join('، '));
-    return { idx, baseName, items, label: baseName + (parts.length ? ' — ' + parts.join(' — ') : '') };
+    let partsEn = [];
+    if (allYears.length) partsEn.push('Years: ' + allYears.join(', '));
+    if (selKeys.length) partsEn.push(cTranslateList(selKeys).join(', '));
+    return { idx, baseName, baseNameEn, items, itemsEn, label: baseName + (parts.length ? ' — ' + parts.join(' — ') : ''), labelEn: baseNameEn + (partsEn.length ? ' - ' + partsEn.join(' - ') : '') };
   } else if (idx === 12) {
     const multiArr = qReadMultiValues('cGrade12Multi');
     const single = g('cGrade12')?.value || '';
     const all = multiArr.length ? multiArr : (single ? [single] : []);
     items = all.slice();
-    return { idx, baseName, items, label: baseName + (all.length ? ' — ' + all.join('، ') : '') };
+    itemsEn = cTranslateList(all);
+    return { idx, baseName, baseNameEn, items, itemsEn, label: baseName + (all.length ? ' — ' + all.join('، ') : ''), labelEn: baseNameEn + (itemsEn.length ? ' - ' + itemsEn.join(', ') : '') };
   }
-  return { idx, baseName, items: [], label: baseName };
+  return { idx, baseName, baseNameEn, items: [], itemsEn: [], label: baseName, labelEn: baseNameEn };
 }
 
 // مزامنة حقل serviceType الخفي + إعادة احتساب التمهيد
@@ -12177,10 +12949,11 @@ function cSyncServiceType() {
 }
 
 // تهيئة كتالوج خدمات العقد (يُستدعى عند فتح تبويب إنشاء عقد)
-function cInitServicesPanel() {
+function cInitServicesPanel(forceRebuild) {
   // ملء سنوات الميزانية
   const yChips = g('cGrade11YearChips');
-  if (yChips && !yChips.children.length) {
+  if (yChips && (forceRebuild || !yChips.children.length)) {
+    yChips.innerHTML = '';
     const cy = new Date().getFullYear();
     for (let y = 2018; y <= cy + 1; y++) {
       const btn = document.createElement('button');
@@ -12197,12 +12970,12 @@ function cInitServicesPanel() {
   }
   // بناء الدرجات + المجالات للخدمات ١، ٢
   const c1 = g('cGrade1Chips');
-  if (c1 && !c1.children.length) cBuildNestedGrades(c1, 'cGrade1Multi', 'cGrade1Nested');
+  if (c1 && (forceRebuild || !c1.children.length)) cBuildNestedGrades(c1, 'cGrade1Multi', 'cGrade1Nested');
   const c2 = g('cGrade2Chips');
-  if (c2 && !c2.children.length) cBuildNestedGrades(c2, 'cGrade2Multi', 'cGrade2Nested');
+  if (c2 && (forceRebuild || !c2.children.length)) cBuildNestedGrades(c2, 'cGrade2Multi', 'cGrade2Nested');
   // بناء المجالات + الدرجات للخدمة ٩
   const c9 = g('cGrade9Chips');
-  if (c9 && !c9.children.length) cBuildNestedDomains(c9, 'cGrade9', 'cGrade9Nested');
+  if (c9 && (forceRebuild || !c9.children.length)) cBuildNestedDomains(c9, 'cGrade9', 'cGrade9Nested');
 }
 // تشغيل أولي عند تحميل الصفحة (احتياطي — التبويب Create يكون نشطاً افتراضياً)
 if (typeof window !== 'undefined') {
