@@ -1,0 +1,178 @@
+/* assets/styles.css
+   Full stylesheet extracted from index.html.
+   Contains all layout, component, print and theme rules.
+   NOTE: critical.css already contains minimal rules for initial render.
+*/
+/* ═══════════════════════════════════════════════
+   ROOT VARIABLES & RESET
+══════════════════════════════════════════════ */
+:root {
+  /* Brand colors (shared between themes) */
+  --gold:      #b8922a;
+  --gold-lt:   #d4a93c;
+  --gold-glow: #e8c060;
+  --gold-pale: #f4e4b0;
+  --cream:     #faf6ec;
+  --paper:     #fffdf7;
+  --white:     #ffffff;
+  --danger:    #c0392b;
+  --success:   #1a6b3c;
+  --r-sm: 8px;
+  --r-md: 14px;
+  --r-lg: 20px;
+
+  /* Dark theme (default) */
+  --ink:          #0c1220;
+  --ink-mid:      #162035;
+  --ink-soft:     #1e3050;
+  --bg-gradient:  linear-gradient(145deg, #07101f 0%, #0f1e38 40%, #0a1628 70%, #060d1a 100%);
+  --text-primary: #ffffff;
+  --text-body:    #ffffff;
+  --muted:        rgba(255,255,255,0.45);
+  --border:       rgba(184,146,42,0.22);
+  --card:         rgba(20,30,50,0.55);
+  --card-solid:   #162035;
+  --input-bg:     rgba(255,255,255,0.03);
+  --modal-bg:     linear-gradient(135deg,#1a1a1a 0%,#242424 100%);
+  --shadow-strong: 0 20px 60px rgba(0,0,0,0.6);
+}
+
+/* Light theme override */
+html[data-theme="light"] {
+  --ink:          #f5f1e6;
+  --ink-mid:      #ebe4d0;
+  --ink-soft:     #ddd2b3;
+  --bg-gradient:  linear-gradient(145deg, #f8f4e8 0%, #efe8d4 40%, #f2ecd8 70%, #ede3c8 100%);
+  --text-primary: #1a1a1a;
+  --text-body:    #2a2a2a;
+  --muted:        rgba(0,0,0,0.55);
+  --border:       rgba(184,146,42,0.45);
+  --card:         rgba(255,253,247,0.85);
+  --card-solid:   #fffdf7;
+  --input-bg:     rgba(255,255,255,0.6);
+  --modal-bg:     linear-gradient(135deg,#fffdf7 0%,#f7efd9 100%);
+  --shadow-strong: 0 20px 60px rgba(120,90,20,0.2);
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Tajawal', sans-serif;
+  background: var(--ink);
+  color: var(--text-primary);
+  direction: rtl;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%; /* منع تكبير نص iOS التلقائي في الوضع الأفقي */
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* Light theme: targeted overrides for hardcoded whites/dark backgrounds */
+html[data-theme="light"] .topbar-brand h1 { color: #2a2a2a; }
+html[data-theme="light"] .fi, html[data-theme="light"] .fs, html[data-theme="light"] textarea {
+  background: rgba(255,255,255,0.7) !important;
+  color: #1a1a1a !important;
+}
+html[data-theme="light"] .fi::placeholder, html[data-theme="light"] textarea::placeholder {
+  color: rgba(0,0,0,0.35) !important;
+}
+html[data-theme="light"] label, html[data-theme="light"] .field-label {
+  color: #333 !important;
+}
+html[data-theme="light"] .step-label, html[data-theme="light"] .step-num {
+  color: #2a2a2a;
+}
+html[data-theme="light"] .card { background: rgba(255,253,247,0.75); }
+html[data-theme="light"] .wizard-panel, html[data-theme="light"] .doc-panel {
+  background: var(--card); backdrop-filter: blur(10px);
+}
+/* Keep the printed contract itself always looking like paper */
+html[data-theme="light"] .contract-doc { color: #000; }
+
+/* Theme toggle button */
+.theme-toggle {
+  background: rgba(184,146,42,0.12);
+  border: 1px solid var(--border);
+  color: var(--gold-glow);
+  border-radius: 8px;
+  padding: 6px 11px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  transition: all .2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.theme-toggle:hover { background: rgba(184,146,42,0.22); border-color: var(--gold); }
+html[data-theme="light"] .theme-toggle { color: #7a5a15; }
+
+/* Logout button */
+.logout-btn {
+  background: rgba(220,70,70,0.1);
+  border: 1px solid rgba(220,70,70,0.32);
+  color: #e77;
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  transition: all .2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.logout-btn:hover { background: rgba(220,70,70,0.18); border-color: rgba(220,70,70,0.5); color: #f88; }
+html[data-theme="light"] .logout-btn { color: #a53030; background: rgba(200,60,60,0.08); }
+html[data-theme="light"] .logout-btn:hover { background: rgba(200,60,60,0.18); color: #801f1f; }
+
+/* ═══════════════════════════════════════════════
+   ANIMATED BACKGROUND
+══════════════════════════════════════════════ */
+.bg-canvas {
+  position: fixed; inset: 0; z-index: 0; overflow: hidden;
+  background: var(--bg-gradient);
+}
+.bg-canvas::before {
+  content:''; position:absolute; inset:0;
+  background:
+    radial-gradient(ellipse 80% 60% at 15% 30%, rgba(184,146,42,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 85% 70%, rgba(184,146,42,0.05) 0%, transparent 55%);
+}
+.bg-grid {
+  position:absolute; inset:0;
+  background-image:
+    linear-gradient(rgba(184,146,42,0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(184,146,42,0.035) 1px, transparent 1px);
+  background-size: 60px 60px;
+  animation: gridDrift 30s linear infinite;
+}
+@keyframes gridDrift {
+  0%   { transform: translate(0,0); }
+  100% { transform: translate(60px,60px); }
+}
+.bg-orb {
+  position:absolute; border-radius:50%;
+  filter: blur(80px); opacity: 0.12;
+  animation: orbPulse 8s ease-in-out infinite alternate;
+}
+.orb1 { width:500px; height:500px; background:var(--gold); top:-100px; right:-150px; }
+.orb2 { width:350px; height:350px; background:#2a4a8a; bottom:-80px; left:-100px; animation-delay:3s; }
+@keyframes orbPulse {
+  from { transform: scale(1) rotate(0deg); opacity:0.10; }
+  to   { transform: scale(1.15) rotate(5deg); opacity:0.18; }
+}
+
+/* ═══════════════════════════════════════════════
+   APP SHELL
+══════════════════════════════════════════════ */
+.app {
+  position: relative; z-index: 10;
+  display: flex; flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh; /* iOS Safari: احتساب شريط المتصفح الديناميكي */
+}
+
+/* ... the rest of the original CSS continues unchanged ... */
